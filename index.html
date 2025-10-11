@@ -10,6 +10,9 @@
         body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #8bc6f2, #a18dce); background-size: cover; background-position: center; }
         .login-container { background-color: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.2); }
         .title-text { text-shadow: 2px 2px 8px rgba(0,0,0,0.4); }
+        .loader { border-top-color: #3498db; -webkit-animation: spin 1s linear infinite; animation: spin 1s linear infinite; }
+        @-webkit-keyframes spin { 0% { -webkit-transform: rotate(0deg); } 100% { -webkit-transform: rotate(360deg); } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
@@ -25,50 +28,61 @@
             <form id="login-form" class="login-container p-8 rounded-2xl shadow-2xl space-y-6">
                 <input type="text" id="username" placeholder="Username" class="w-full px-4 py-3 bg-white/80 rounded-full border-2 border-transparent focus:outline-none focus:border-cyan-400">
                 <input type="password" id="password" placeholder="Password" class="w-full px-4 py-3 bg-white/80 rounded-full border-2 border-transparent focus:outline-none focus:border-cyan-400">
-                <p id="error-message" class="text-red-300 text-sm font-semibold hidden h-4"></p>
-                <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-full shadow-lg transform hover:scale-105 transition-all">Login</button>
+                <p id="error-message" class="text-red-300 text-sm font-semibold h-4"></p>
+                <button type="submit" id="login-button" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-full shadow-lg transform hover:scale-105 transition-all flex items-center justify-center">
+                    <span id="login-text">Login</span>
+                    <div id="login-loader" class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-6 w-6 ml-3 hidden"></div>
+                </button>
             </form>
         </main>
     </div>
     
+    <!-- Scripts do Firebase (versão de compatibilidade para HTML) -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
     <script>
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyAg37Z0ahi-a_jNt_X89UUY1oj7RiNuMFs",
-  authDomain: "yoshi-prompts-app.firebaseapp.com",
-  projectId: "yoshi-prompts-app",
-  storageBucket: "yoshi-prompts-app.firebasestorage.app",
-  messagingSenderId: "509816669209",
-  appId: "1:509816669209:web:695a6c4bd2d18014371688"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+        // Sua configuração pessoal do Firebase
+        const firebaseConfig = {
+          apiKey: "AIzaSyAg37Z0ahi-a_jNt_X89UUY1oj7RiNuMFs",
+          authDomain: "yoshi-prompts-app.firebaseapp.com",
+          projectId: "yoshi-prompts-app",
+          storageBucket: "yoshi-prompts-app.appspot.com",
+          messagingSenderId: "509816669209",
+          appId: "1:509816669209:web:695a6c4bd2d18014371688"
+        };
 
         // Inicializa o Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        document.getElementById('login-form').addEventListener('submit', function(event) {
+        const loginForm = document.getElementById('login-form');
+        const loginButton = document.getElementById('login-button');
+        const loginText = document.getElementById('login-text');
+        const loginLoader = document.getElementById('login-loader');
+        const errorMessage = document.getElementById('error-message');
+
+        loginForm.addEventListener('submit', function(event) {
             event.preventDefault();
             handleLogin();
         });
 
         async function handleLogin() {
-            const username = document.getElementById('username').value;
+            const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
-            const errorMessage = document.getElementById('error-message');
-            errorMessage.classList.add('hidden'); // Esconde a mensagem de erro a cada tentativa
+            
+            if (!username || !password) {
+                errorMessage.textContent = 'Preencha todos os campos.';
+                return;
+            }
 
-            // Credenciais de Admin (Hardcoded)
+            // Ativa o estado de carregamento
+            loginText.classList.add('hidden');
+            loginLoader.classList.remove('hidden');
+            loginButton.disabled = true;
+            errorMessage.textContent = '';
+
+            // Credenciais de Admin (fixas no código)
             const admin = { login: 'admin', password: 'admin123' };
             if (username === admin.login && password === admin.password) {
                 sessionStorage.setItem('username', 'Administrador');
@@ -77,15 +91,12 @@ const app = initializeApp(firebaseConfig);
                 return;
             }
 
-            // Busca o usuário no banco de dados Firestore
             try {
                 const usersRef = db.collection('users');
                 const snapshot = await usersRef.where('login', '==', username).get();
 
                 if (snapshot.empty) {
-                    errorMessage.textContent = 'Login ou senha inválidos.';
-                    errorMessage.classList.remove('hidden');
-                    return;
+                    throw new Error('Login ou senha inválidos.');
                 }
 
                 let userFound = false;
@@ -93,41 +104,39 @@ const app = initializeApp(firebaseConfig);
                     const user = doc.data();
                     if (user.password === password) {
                         userFound = true;
-                        // Lógica de Vencimento
+                        
                         const hoje = new Date();
                         hoje.setHours(0, 0, 0, 0);
                         const vencimento = new Date(user.vencimento + 'T00:00:00');
                         
                         if (vencimento < hoje) {
-                            errorMessage.textContent = 'Seu acesso expirou. Contate o suporte.';
-                            errorMessage.classList.remove('hidden');
-                            return;
+                            throw new Error('Seu acesso expirou. Contate o suporte.');
                         }
 
                         const diffTime = vencimento - hoje;
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                         
-                        sessionStorage.removeItem('expirationWarningDays'); // Limpa aviso anterior
+                        sessionStorage.removeItem('expirationWarningDays');
                         if (diffDays >= 0 && diffDays <= 5) {
                             sessionStorage.setItem('expirationWarningDays', diffDays);
                         }
                         
-                        // Salva na sessionStorage para a sessão atual
                         sessionStorage.setItem('username', user.name);
-                        sessionStorage.setItem('userId', doc.id); // doc.id é o ID único do Firestore
+                        sessionStorage.setItem('userId', doc.id);
                         window.location.href = './user.html';
                     }
                 });
 
                 if (!userFound) {
-                    errorMessage.textContent = 'Login ou senha inválidos.';
-                    errorMessage.classList.remove('hidden');
+                    throw new Error('Login ou senha inválidos.');
                 }
 
             } catch (error) {
-                console.error("Erro ao fazer login: ", error);
-                errorMessage.textContent = 'Erro de conexão. Tente novamente.';
-                errorMessage.classList.remove('hidden');
+                errorMessage.textContent = error.message;
+                // Desativa o estado de carregamento
+                loginText.classList.remove('hidden');
+                loginLoader.classList.add('hidden');
+                loginButton.disabled = false;
             }
         }
     </script>
