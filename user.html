@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yoshi Prompts - Início</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #8bc6f2, #a18dce);
+        }
+        .main-container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .btn-category.active {
+            background-color: #1e40af; /* blue-800 */
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .prompt-card {
+            background-color: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .code-box {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #f1f1f1;
+            font-family: 'Courier New', Courier, monospace;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+    <!-- Modal de Notificação -->
+    <div id="notification-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl text-center">
+            <p id="notification-message"></p>
+        </div>
+    </div>
+    
+    <div class="main-container min-h-screen p-4">
+        <!-- Cabeçalho -->
+        <header class="flex justify-between items-start mb-4 text-white">
+            <div>
+                <h1 id="welcome-message" class="text-4xl font-bold">Bem Vindo.</h1>
+                <p id="user-name" class="text-2xl"></p>
+            </div>
+            <button onclick="handleLogout()" class="text-4xl transform hover:scale-110 transition-transform duration-200">&laquo;</button>
+        </header>
+
+        <!-- Botões de Categoria -->
+        <div class="flex justify-around items-center my-6 space-x-2">
+            <button onclick="filterPrompts('Divertido', this)" class="btn-category flex-1 py-2 px-4 bg-lime-300 rounded-full shadow-md hover:bg-lime-400 transition-all duration-300 font-semibold">Divertido</button>
+            <button onclick="filterPrompts('Profissional', this)" class="btn-category flex-1 py-2 px-4 bg-lime-300 rounded-full shadow-md hover:bg-lime-400 transition-all duration-300 font-semibold">Profissional</button>
+            <button onclick="filterPrompts('Desenhos', this)" class="btn-category flex-1 py-2 px-4 bg-lime-300 rounded-full shadow-md hover:bg-lime-400 transition-all duration-300 font-semibold">Desenhos</button>
+        </div>
+
+        <!-- Container dos Prompts -->
+        <main id="prompts-container" class="space-y-6">
+            <!-- Os prompts serão inseridos aqui via JavaScript -->
+        </main>
+        
+        <footer class="text-center mt-8 text-white/70 text-sm">
+            By: A.Yoshi
+        </footer>
+    </div>
+
+    <script>
+        let allPrompts = [];
+        let currentUsername = '';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            currentUsername = localStorage.getItem('username');
+            if (currentUsername) {
+                document.getElementById('user-name').textContent = currentUsername.toUpperCase();
+                logActivity('Login');
+            } else {
+                window.location.href = './login.html'; // Redireciona se não estiver logado
+            }
+
+            // Carrega os prompts do localStorage
+            allPrompts = JSON.parse(localStorage.getItem('yoshiPrompts')) || [];
+            
+            // Renderiza os 4 prompts mais recentes
+            renderPrompts(allPrompts.slice(-4).reverse());
+        });
+        
+        // --- FUNÇÕES DE LOG ---
+        function logActivity(action, details = null) {
+            const activityLog = JSON.parse(localStorage.getItem('yoshiPromptsActivityLog')) || [];
+            const newLog = {
+                userName: currentUsername,
+                action: action,
+                details: details,
+                timestamp: new Date().toISOString()
+            };
+            activityLog.push(newLog);
+            localStorage.setItem('yoshiPromptsActivityLog', JSON.stringify(activityLog));
+        }
+
+        function handleLogout() {
+            logActivity('Logout');
+            // Pequeno delay para garantir que o log seja salvo antes de redirecionar
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 100);
+        }
+
+        // --- RENDERIZAÇÃO E FILTROS ---
+        function renderPrompts(promptsToRender) {
+            const container = document.getElementById('prompts-container');
+            container.innerHTML = ''; // Limpa o container
+
+            if (promptsToRender.length === 0) {
+                container.innerHTML = `<div class="text-center text-white bg-black/20 p-4 rounded-lg">Nenhum prompt encontrado nesta categoria.</div>`;
+                return;
+            }
+
+            promptsToRender.forEach((prompt, index) => {
+                const promptId = `prompt-code-${prompt.id}`;
+                // Escapa a descrição para evitar problemas no HTML
+                const escapedDescription = prompt.description.replace(/'/g, "\\'");
+
+                const card = `
+                <div class="prompt-card rounded-2xl p-3 shadow-lg">
+                    <div class="flex justify-between items-center text-white mb-2 px-1">
+                        <h2 class="font-bold">${prompt.description}</h2>
+                        <span class="text-xs font-semibold bg-black/20 px-2 py-1 rounded-full">Cat: ${prompt.category}</span>
+                    </div>
+                    <img src="${prompt.image || 'https://placehold.co/600x400/EEE/333?text=Sem+Imagem'}" alt="${prompt.description}" class="rounded-lg w-full h-auto object-cover mb-3" onerror="this.onerror=null;this.src='https://placehold.co/600x400/EEE/333?text=Imagem+Inválida';">
+                    <div id="${promptId}" class="code-box p-3 rounded-lg text-sm overflow-x-auto">
+                        ${prompt.text.replace(/\n/g, '<br>')}
+                    </div>
+                    <div class="flex justify-between items-center mt-3">
+                        <button onclick="copyToClipboard('${promptId}', '${escapedDescription}')" class="bg-gray-600 hover:bg-gray-700 text-white text-xs font-bold py-2 px-4 rounded-lg transition-colors">copiar texto</button>
+                        <a href="${prompt.link || '#'}" target="_blank" class="bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-2 px-4 rounded-lg transition-colors no-underline">IA ${prompt.link && prompt.link.includes('gemini') ? 'Gemini' : 'Link'}</a>
+                    </div>
+                </div>
+                `;
+                container.innerHTML += card;
+            });
+        }
+
+        function filterPrompts(category, clickedButton) {
+            document.querySelectorAll('.btn-category').forEach(btn => btn.classList.remove('active', 'bg-blue-800'));
+            document.getElementById('welcome-message').classList.add('hidden');
+            clickedButton.classList.add('active', 'bg-blue-800');
+            
+            const filtered = allPrompts.filter(p => p.category === category);
+            renderPrompts(filtered.slice(-4).reverse());
+        }
+
+        function copyToClipboard(elementId, promptDescription) {
+            const textToCopy = document.getElementById(elementId).innerText;
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = textToCopy;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            // Registra a atividade de cópia
+            logActivity('Copiou Prompt', { promptDescription: promptDescription });
+
+            showNotification('Texto copiado para a área de transferência!');
+        }
+
+        function showNotification(message) {
+            const modal = document.getElementById('notification-modal');
+            const modalMessage = document.getElementById('notification-message');
+            modalMessage.textContent = message;
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
+

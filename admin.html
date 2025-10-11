@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yoshi Prompts - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #8bc6f2, #a18dce);
+        }
+        .main-container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .btn-main.active {
+            background-color: #22c55e; /* green-500 */
+            color: white;
+            transform: scale(1.05);
+        }
+        .btn-sub.active, .btn-sub-prompt.active {
+            background-color: #16a34a; /* green-600 */
+            color: white;
+        }
+        .page-content {
+            background-color: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        .history-box::-webkit-scrollbar { width: 5px; }
+        .history-box::-webkit-scrollbar-track { background: transparent; }
+        .history-box::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.3); border-radius: 10px; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Modal de Confirmação -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-white p-6 rounded-lg shadow-xl text-center max-w-sm w-full">
+            <p id="confirm-message" class="mb-4 text-lg">Tem certeza que deseja excluir?</p>
+            <div class="flex justify-center space-x-4">
+                <button id="confirm-yes" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg transition-colors">Sim</button>
+                <button id="confirm-no" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded-lg transition-colors">Não</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de Notificação -->
+    <div id="notification-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl text-center">
+            <p id="notification-message"></p>
+        </div>
+    </div>
+
+    <div class="main-container min-h-screen p-4 flex flex-col">
+        <!-- Cabeçalho -->
+        <header class="flex justify-between items-center mb-4 text-white">
+            <h1 id="admin-name" class="text-3xl font-bold"></h1>
+            <button onclick="window.location.href='login.html'" class="text-4xl transform hover:scale-110 transition-transform duration-200">&laquo;</button>
+        </header>
+
+        <!-- Botões de Navegação Principal -->
+        <div class="flex justify-around items-center mb-6 space-x-2">
+            <button onclick="showPage('cadastrar')" data-page="cadastrar" class="btn-main flex-1 py-2 px-4 bg-lime-300 rounded-full shadow-md hover:bg-lime-400 transition-all duration-300 font-semibold">Cadastrar</button>
+            <button onclick="showPage('monitorar')" data-page="monitorar" class="btn-main flex-1 py-2 px-4 bg-lime-300 rounded-full shadow-md hover:bg-lime-400 transition-all duration-300 font-semibold active">Monitorar</button>
+            <button onclick="showPage('adc-prompts')" data-page="adc-prompts" class="btn-main flex-1 py-2 px-4 bg-lime-300 rounded-full shadow-md hover:bg-lime-400 transition-all duration-300 font-semibold">Adc. Prompts</button>
+        </div>
+
+        <!-- Conteúdo da Página -->
+        <main class="flex-grow">
+            <!-- PÁGINA MONITORAR -->
+            <div id="monitorar-page" class="page-content rounded-2xl p-4">
+                <h2 class="text-center font-bold text-white bg-black/20 rounded-full py-2 mb-4">HISTÓRICO DE ATIVIDADES GERAL</h2>
+                <div id="global-history-log" class="history-box bg-white/80 p-4 rounded-lg h-96 overflow-y-auto text-sm space-y-2">
+                    <!-- Histórico global será renderizado aqui -->
+                </div>
+                 <div class="mt-6 flex justify-center space-x-4">
+                    <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors" onclick="showNotification('Backup realizado com sucesso!')">Fazer Backup</button>
+                    <button class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg transition-colors" onclick="showNotification('Backup restaurado!')">Restaurar Backup</button>
+                </div>
+            </div>
+
+            <!-- PÁGINA CADASTRAR -->
+            <div id="cadastrar-page" class="page-content rounded-2xl p-4 hidden">
+                <div class="flex justify-around items-center mb-4 text-xs space-x-2">
+                    <button onclick="newUser()" data-userview="novo" class="btn-sub flex-1 py-2 px-2 rounded-full shadow hover:bg-lime-500">NOVO</button>
+                    <button onclick="showUserView('pesquisar')" data-userview="pesquisar" class="btn-sub flex-1 py-2 px-2 rounded-full shadow hover:bg-gray-500">PESQUISAR</button>
+                    <button onclick="deleteCurrentUser()" class="btn-sub flex-1 py-2 px-2 bg-red-500 text-white rounded-full shadow hover:bg-red-600">EXCLUIR</button>
+                </div>
+
+                <!-- View de Formulário de Usuário -->
+                <div id="user-form-view">
+                    <div class="space-y-3 text-sm">
+                        <input id="user-vencimento" type="date" class="w-full p-2 rounded-lg border-2 border-transparent focus:outline-none focus:border-cyan-400" value="2025-12-31">
+                        <div id="user-vencimento-label" class="w-full p-2 rounded-lg bg-cyan-800 text-white text-center">Vence dia 31/12/2025</div>
+                        <input id="user-id" type="text" placeholder="Código: (automático)" class="w-full p-2 rounded-lg" disabled>
+                        <input id="user-name" type="text" placeholder="Nome: " class="w-full p-2 rounded-lg border-2 border-transparent focus:outline-none focus:border-cyan-400">
+                        <input id="user-password" type="text" placeholder="Senha: " class="w-full p-2 rounded-lg border-2 border-transparent focus:outline-none focus:border-cyan-400">
+                        <div class="flex space-x-2">
+                            <input id="user-login" type="text" placeholder="Login: " class="flex-grow p-2 rounded-lg border-2 border-transparent focus:outline-none focus:border-cyan-400">
+                            <button class="bg-green-500 hover:bg-green-600 text-white font-bold p-2 rounded-lg" onclick="saveCurrentUser()">Salvar</button>
+                        </div>
+                    </div>
+                     <div class="mt-4">
+                        <h3 class="text-center font-bold text-white bg-black/20 rounded-full py-1 my-2">HISTÓRICO DE ATIVIDADES</h3>
+                        <div id="user-history-log" class="history-box bg-white/80 p-2 rounded-lg h-32 overflow-y-auto text-sm space-y-1">
+                           <p>Nenhuma atividade registrada para este usuário.</p>
+                        </div>
+                        <div class="flex justify-end space-x-2 mt-2">
+                             <button class="bg-green-600 text-white text-xs font-bold p-2 rounded-lg" onclick="showNotification('Histórico salvo em .xlsx')">salva .xlsx</button>
+                             <button class="bg-red-500 text-white text-xs font-bold p-2 rounded-lg" onclick="showConfirm('Limpar o histórico deste usuário?')">LIMPAR</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View de Pesquisa de Usuário -->
+                <div id="user-pesquisar-view" class="hidden">
+                     <input type="text" id="user-search-input" onkeyup="renderUsers()" placeholder="Pesquisar por nome ou login..." class="w-full p-2 rounded-lg border-2 border-transparent focus:outline-none focus:border-cyan-400 mb-2">
+                     <div id="user-list" class="history-box bg-white/80 p-2 rounded-lg h-[25rem] overflow-y-auto text-sm space-y-2">
+                         <!-- Lista de usuários será renderizada aqui -->
+                     </div>
+                </div>
+            </div>
+
+
+            <!-- PÁGINA ADICIONAR PROMPTS -->
+            <div id="adc-prompts-page" class="page-content rounded-2xl p-4 hidden">
+                 <div class="flex justify-around items-center mb-4 text-xs space-x-2">
+                    <button onclick="newPrompt()" data-view="novo" class="btn-sub-prompt flex-1 py-2 px-2 rounded-full shadow hover:bg-lime-500 transition-colors">NOVO</button>
+                    <button onclick="showPromptView('pesquisar')" data-view="pesquisar" class="btn-sub-prompt flex-1 py-2 px-2 rounded-full shadow hover:bg-gray-500 transition-colors">PESQUISAR</button>
+                    <button onclick="deleteCurrentPrompt()" class="btn-sub-prompt flex-1 py-2 px-2 bg-red-500 text-white rounded-full shadow hover:bg-red-600">EXCLUIR</button>
+                </div>
+                
+                <!-- View de Novo/Editar Prompt -->
+                <div id="prompt-novo-view">
+                    <div class="space-y-3 text-sm">
+                        <div id="image-preview-container" class="my-2 h-32 bg-white/30 rounded-lg flex items-center justify-center overflow-hidden border-2 border-dashed border-white/40">
+                            <img id="prompt-image-preview" src="" class="hidden h-full w-full object-contain">
+                            <span id="image-placeholder" class="text-white/80">Visualização da Imagem</span>
+                        </div>
+                        <input type="file" id="prompt-image-input" class="hidden" accept="image/*">
+                        <button onclick="document.getElementById('prompt-image-input').click()" class="w-full p-2 rounded-lg bg-blue-500 text-white text-center font-semibold hover:bg-blue-600">Selecionar Imagem</button>
+                        <button onclick="document.getElementById('prompt-image-input').click()" class="w-full p-2 rounded-lg bg-cyan-500 text-white text-center font-semibold hover:bg-cyan-600">Alterar Imagem</button>
+                        <input type="text" id="prompt-id" placeholder="Código: (automático)" class="w-full p-2 rounded-lg" disabled>
+                        <input type="text" id="prompt-description" placeholder="Descrição: Cosplay de Witcher" class="w-full p-2 rounded-lg">
+                        <input type="text" id="prompt-category" placeholder="Categoria: DIVERTIDO" class="w-full p-2 rounded-lg">
+                        <input type="text" id="prompt-link" placeholder="Link da IA: https://gemini.google.com/" class="w-full p-2 rounded-lg">
+                        <textarea id="prompt-text" placeholder="Texto do prompt..." class="w-full p-2 rounded-lg h-24 resize-none"></textarea>
+                        <button class="w-full p-2 rounded-lg bg-green-500 text-white text-center font-bold hover:bg-green-600" onclick="saveCurrentPrompt()">SALVAR</button>
+                    </div>
+                </div>
+
+                <!-- View de Pesquisar Prompt -->
+                <div id="prompt-pesquisar-view" class="hidden">
+                    <div class="space-y-3 text-sm">
+                        <input type="text" id="prompt-search-input" onkeyup="renderPrompts()" placeholder="Pesquisar por descrição ou categoria..." class="w-full p-2 rounded-lg border-2 border-transparent focus:outline-none focus:border-cyan-400">
+                        <div id="prompt-list" class="history-box bg-white/80 p-2 rounded-lg h-[25.5rem] overflow-y-auto text-sm space-y-2">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="text-center mt-6 text-white/70 text-sm">
+            By: A.Yoshi
+        </footer>
+    </div>
+
+    <script>
+        let onConfirmAction = () => {};
+        let allUsers = [];
+        let allPrompts = [];
+        let activityLog = [];
+
+        // --- INICIALIZAÇÃO ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Carrega dados do localStorage
+            allUsers = JSON.parse(localStorage.getItem('yoshiPromptsUsers')) || [];
+            allPrompts = JSON.parse(localStorage.getItem('yoshiPrompts')) || [];
+            activityLog = JSON.parse(localStorage.getItem('yoshiPromptsActivityLog')) || [];
+
+            const username = localStorage.getItem('username') || 'Admin';
+            document.getElementById('admin-name').textContent = username;
+            
+            // Listeners dos modais e inputs
+            document.getElementById('confirm-yes').addEventListener('click', () => { onConfirmAction(); closeConfirm(); });
+            document.getElementById('confirm-no').addEventListener('click', closeConfirm);
+            document.getElementById('prompt-image-input').addEventListener('change', handleImagePreview);
+            document.getElementById('user-vencimento').addEventListener('change', updateUserVencimentoLabel);
+
+            // Renderiza o log inicial na página de monitoramento
+            renderGlobalActivityLog();
+        });
+        
+        // --- FUNÇÕES DE STORAGE ---
+        function saveUsersToStorage() { localStorage.setItem('yoshiPromptsUsers', JSON.stringify(allUsers)); }
+        function savePromptsToStorage() { localStorage.setItem('yoshiPrompts', JSON.stringify(allPrompts)); }
+
+        // --- NAVEGAÇÃO PRINCIPAL ---
+        function showPage(pageId) {
+            ['monitorar-page', 'cadastrar-page', 'adc-prompts-page'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            const pageElement = document.getElementById(pageId + '-page');
+            if (pageElement) pageElement.classList.remove('hidden');
+            document.querySelectorAll('.btn-main').forEach(btn => btn.classList.toggle('active', btn.dataset.page === pageId));
+            
+            if (pageId === 'monitorar') renderGlobalActivityLog();
+            if (pageId === 'adc-prompts') newPrompt();
+            if (pageId === 'cadastrar') newUser();
+        }
+
+        // --- SEÇÃO DE LOGS DE ATIVIDADE ---
+        function formatTimestamp(isoString) {
+            if (!isoString) return 'Data indisponível';
+            const date = new Date(isoString);
+            return date.toLocaleString('pt-BR');
+        }
+
+        function renderGlobalActivityLog() {
+            const container = document.getElementById('global-history-log');
+            container.innerHTML = '';
+            
+            // Pega o log e inverte para mostrar o mais recente primeiro
+            const reversedLog = [...activityLog].reverse();
+
+            if (reversedLog.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-600 p-4">Nenhuma atividade registrada ainda.</p>';
+                return;
+            }
+
+            reversedLog.forEach(log => {
+                let logDetails = '';
+                if(log.action === 'Copiou Prompt' && log.details) {
+                    logDetails = ` - Prompt: "${log.details.promptDescription}"`;
+                }
+                const logElement = document.createElement('div');
+                logElement.innerHTML = `<p><strong>${log.userName}</strong> - ${formatTimestamp(log.timestamp)}: ${log.action}${logDetails}</p><hr class="border-white/50 my-1">`;
+                container.appendChild(logElement);
+            });
+        }
+
+        function renderUserActivityLog(userName) {
+            const container = document.getElementById('user-history-log');
+            container.innerHTML = '';
+            
+            const userLog = activityLog.filter(log => log.userName === userName).reverse();
+
+            if (userLog.length === 0) {
+                container.innerHTML = '<p>Nenhuma atividade registrada para este usuário.</p>';
+                return;
+            }
+
+            userLog.forEach(log => {
+                 let logDetails = '';
+                if(log.action === 'Copiou Prompt' && log.details) {
+                    logDetails = ` - Prompt: "${log.details.promptDescription}"`;
+                }
+                const logElement = document.createElement('p');
+                logElement.innerHTML = `<strong>${formatTimestamp(log.timestamp)}:</strong> ${log.action}${logDetails}`;
+                container.appendChild(logElement);
+            });
+        }
+
+
+        // --- SEÇÃO DE USUÁRIOS (CADASTRAR) ---
+        function showUserView(viewName) {
+            document.getElementById('user-form-view').classList.toggle('hidden', viewName === 'pesquisar');
+            document.getElementById('user-pesquisar-view').classList.toggle('hidden', viewName !== 'pesquisar');
+            document.querySelectorAll('#cadastrar-page .btn-sub').forEach(btn => btn.classList.toggle('active', btn.dataset.userview === viewName));
+            if (viewName === 'pesquisar') { document.getElementById('user-search-input').value = ''; renderUsers(); }
+        }
+        function newUser() { clearUserForm(); showUserView('form'); }
+        function clearUserForm() {
+            document.getElementById('user-id').value = '';
+            document.getElementById('user-name').value = '';
+            document.getElementById('user-password').value = '';
+            document.getElementById('user-login').value = '';
+            document.getElementById('user-vencimento').value = '';
+            document.getElementById('user-vencimento-label').textContent = 'Vence dia...';
+            document.getElementById('user-history-log').innerHTML = '<p>Nenhuma atividade registrada.</p>';
+        }
+        function populateUserForm(user) {
+            document.getElementById('user-id').value = user.id;
+            document.getElementById('user-name').value = user.name;
+            document.getElementById('user-password').value = user.password;
+            document.getElementById('user-login').value = user.login;
+            document.getElementById('user-vencimento').value = user.vencimento;
+            updateUserVencimentoLabel();
+            renderUserActivityLog(user.name);
+        }
+        function editUser(userId) { const user = allUsers.find(u => u.id === userId); if (user) { populateUserForm(user); showUserView('form'); } }
+        function saveCurrentUser() {
+            const userId = document.getElementById('user-id').value;
+            const userName = document.getElementById('user-name').value.trim();
+            const userPassword = document.getElementById('user-password').value.trim();
+            const userLogin = document.getElementById('user-login').value.trim();
+            if (!userName || !userPassword || !userLogin) { showNotification("Preencha todos os campos: Nome, Senha e Login."); return; }
+            if (userId) {
+                const userIndex = allUsers.findIndex(u => u.id === userId);
+                if (userIndex > -1) { allUsers[userIndex] = { ...allUsers[userIndex], name: userName, password: userPassword, login: userLogin, vencimento: document.getElementById('user-vencimento').value, }; }
+            } else {
+                const newUser = { id: 'user' + Date.now(), name: userName, password: userPassword, login: userLogin, vencimento: document.getElementById('user-vencimento').value, history: 'Usuário recém-criado.' };
+                allUsers.push(newUser);
+                populateUserForm(newUser);
+            }
+            saveUsersToStorage(); showNotification('Cadastro salvo com sucesso!');
+        }
+        function renderUsers() {
+            const searchTerm = document.getElementById('user-search-input').value.toLowerCase();
+            const userListContainer = document.getElementById('user-list');
+            userListContainer.innerHTML = '';
+            const filteredUsers = allUsers.filter(user => user.name.toLowerCase().includes(searchTerm) || user.login.toLowerCase().includes(searchTerm));
+            if (filteredUsers.length === 0) { userListContainer.innerHTML = '<p class="text-center text-gray-500 p-4">Nenhum usuário encontrado.</p>'; return; }
+            filteredUsers.forEach(user => {
+                const userElement = document.createElement('div');
+                userElement.className = 'p-2 bg-white/50 rounded-md cursor-pointer hover:bg-white/80 transition-colors';
+                userElement.setAttribute('onclick', `editUser('${user.id}')`);
+                userElement.innerHTML = `<p class="font-semibold text-gray-700">${user.name}</p><p class="text-xs text-cyan-800">${user.login}</p>`;
+                userListContainer.appendChild(userElement);
+            });
+        }
+        function deleteCurrentUser() {
+            const currentUserId = document.getElementById('user-id').value;
+            if (!currentUserId) { showNotification("Nenhum usuário selecionado para excluir."); return; }
+            const currentUserName = document.getElementById('user-name').value;
+            showConfirm(`Deseja realmente excluir "${currentUserName}"?`, () => {
+                const index = allUsers.findIndex(u => u.id === currentUserId);
+                if (index > -1) { allUsers.splice(index, 1); saveUsersToStorage(); showNotification(`Usuário "${currentUserName}" excluído!`); newUser(); }
+            });
+        }
+        function updateUserVencimentoLabel() {
+            const dateValue = document.getElementById('user-vencimento').value;
+            if (dateValue) { const [year, month, day] = dateValue.split('-'); document.getElementById('user-vencimento-label').textContent = `Vence dia ${day}/${month}/${year}`; }
+        }
+        
+        // --- SEÇÃO DE PROMPTS (ADC. PROMPTS) ---
+        function handleImagePreview(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                const preview = document.getElementById('prompt-image-preview');
+                const placeholder = document.getElementById('image-placeholder');
+                reader.onload = e => { preview.src = e.target.result; preview.classList.remove('hidden'); placeholder.classList.add('hidden'); }
+                reader.readAsDataURL(file);
+            }
+        }
+        function newPrompt() { clearPromptForm(); showPromptView('novo'); }
+        function showPromptView(viewName) {
+            document.getElementById('prompt-novo-view').classList.toggle('hidden', viewName !== 'novo');
+            document.getElementById('prompt-pesquisar-view').classList.toggle('hidden', viewName !== 'pesquisar');
+            document.querySelectorAll('#adc-prompts-page .btn-sub-prompt').forEach(btn => btn.classList.toggle('active', btn.dataset.view === viewName));
+            if (viewName === 'pesquisar') { document.getElementById('prompt-search-input').value = ''; renderPrompts(); }
+        }
+        function clearPromptForm() {
+            document.getElementById('prompt-id').value = '';
+            document.getElementById('prompt-description').value = '';
+            document.getElementById('prompt-category').value = '';
+            document.getElementById('prompt-link').value = '';
+            document.getElementById('prompt-text').value = '';
+            const preview = document.getElementById('prompt-image-preview');
+            const placeholder = document.getElementById('image-placeholder');
+            preview.src = '';
+            preview.classList.add('hidden');
+            placeholder.classList.remove('hidden');
+            document.getElementById('prompt-image-input').value = null;
+        }
+        function populatePromptForm(prompt) {
+            document.getElementById('prompt-id').value = prompt.id;
+            document.getElementById('prompt-description').value = prompt.description;
+            document.getElementById('prompt-category').value = prompt.category;
+            document.getElementById('prompt-link').value = prompt.link || '';
+            document.getElementById('prompt-text').value = prompt.text;
+            const preview = document.getElementById('prompt-image-preview');
+            const placeholder = document.getElementById('image-placeholder');
+            if (prompt.image && prompt.image.startsWith('data:image')) {
+                preview.src = prompt.image;
+                preview.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+            } else {
+                preview.src = '';
+                preview.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+            }
+            document.getElementById('prompt-image-input').value = null;
+        }
+        function editPrompt(promptId) { const prompt = allPrompts.find(p => p.id === promptId); if (prompt) { populatePromptForm(prompt); showPromptView('novo'); } }
+        function saveCurrentPrompt() {
+            const promptId = document.getElementById('prompt-id').value;
+            const promptDesc = document.getElementById('prompt-description').value.trim();
+            const promptCat = document.getElementById('prompt-category').value.trim();
+            if (!promptDesc || !promptCat) { showNotification("Preencha Descrição e Categoria."); return; }
+            const imageData = document.getElementById('prompt-image-preview').src;
+            if (promptId) {
+                const promptIndex = allPrompts.findIndex(p => p.id === promptId);
+                if (promptIndex > -1) {
+                    allPrompts[promptIndex].description = promptDesc;
+                    allPrompts[promptIndex].category = promptCat;
+                    allPrompts[promptIndex].link = document.getElementById('prompt-link').value.trim();
+                    allPrompts[promptIndex].text = document.getElementById('prompt-text').value.trim();
+                    if(imageData.startsWith('data:image')) allPrompts[promptIndex].image = imageData;
+                }
+            } else {
+                const newPrompt = { id: 'prompt' + Date.now(), description: promptDesc, category: promptCat, link: document.getElementById('prompt-link').value.trim(), text: document.getElementById('prompt-text').value.trim(), image: imageData.startsWith('data:image') ? imageData : '' };
+                allPrompts.push(newPrompt);
+                populatePromptForm(newPrompt);
+            }
+            savePromptsToStorage();
+            showNotification('Prompt salvo com sucesso!');
+        }
+        function renderPrompts() {
+            const searchTerm = document.getElementById('prompt-search-input').value.toLowerCase();
+            const promptListContainer = document.getElementById('prompt-list');
+            promptListContainer.innerHTML = '';
+            const filteredPrompts = allPrompts.filter(p => p.description.toLowerCase().includes(searchTerm) || p.category.toLowerCase().includes(searchTerm));
+            if (filteredPrompts.length === 0) { promptListContainer.innerHTML = '<p class="text-center text-gray-500 p-4">Nenhum prompt encontrado.</p>'; return; }
+            filteredPrompts.forEach(prompt => {
+                const promptElement = document.createElement('div');
+                promptElement.className = 'p-2 bg-white/50 rounded-md cursor-pointer hover:bg-white/80 transition-colors';
+                promptElement.setAttribute('onclick', `editPrompt('${prompt.id}')`);
+                promptElement.innerHTML = `<p class="font-semibold text-gray-700">#${prompt.id.substring(6)} - ${prompt.description}</p><p class="text-xs text-cyan-800 font-bold">${prompt.category.toUpperCase()}</p>`;
+                promptListContainer.appendChild(promptElement);
+            });
+        }
+         function deleteCurrentPrompt() {
+            const currentPromptId = document.getElementById('prompt-id').value;
+            if (!currentPromptId) { showNotification("Nenhum prompt selecionado para excluir."); return; }
+            const currentPromptDesc = document.getElementById('prompt-description').value;
+            showConfirm(`Deseja realmente excluir o prompt "${currentPromptDesc}"?`, () => {
+                const index = allPrompts.findIndex(p => p.id === currentPromptId);
+                if (index > -1) { allPrompts.splice(index, 1); savePromptsToStorage(); showNotification(`Prompt "${currentPromptDesc}" excluído!`); newPrompt(); }
+            });
+        }
+        
+        // --- MODAIS E NOTIFICAÇÕES ---
+        function showNotification(message) {
+            const modal = document.getElementById('notification-modal');
+            modal.querySelector('p').textContent = message;
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.add('hidden'), 2500);
+        }
+        function showConfirm(message, callback) {
+            const modal = document.getElementById('confirm-modal');
+            modal.querySelector('p').textContent = message;
+            onConfirmAction = callback || (() => {});
+            modal.classList.remove('hidden');
+        }
+        function closeConfirm() { document.getElementById('confirm-modal').classList.add('hidden'); }
+    </script>
+</body>
+</html>
+
