@@ -31,7 +31,6 @@
             <div id="monitorar-page" class="page-content rounded-2xl p-4 hidden">
                 <h2 class="text-center font-bold text-white bg-black/20 rounded-full py-2 mb-4">HISTÓRICO GERAL</h2>
                 <div id="global-history-log" class="history-box bg-white/80 p-4 rounded-lg h-96 overflow-y-auto text-sm space-y-2"><p>Carregando...</p></div>
-                <!-- BOTÕES ADICIONADOS -->
                 <div class="mt-6 flex flex-wrap justify-center gap-4">
                     <button class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg" onclick="saveAsPDF()">Salvar em PDF</button>
                     <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg" onclick="backupData()">Fazer Backup (JSON)</button>
@@ -39,16 +38,15 @@
                 </div>
             </div>
             <div id="cadastrar-page" class="page-content rounded-2xl p-4 hidden"><div class="flex justify-around items-center mb-4 text-xs space-x-2"><button onclick="newUser()" data-userview="novo" class="btn-sub flex-1 py-2 px-2 rounded-full shadow hover:bg-lime-500">NOVO</button><button onclick="showUserView('pesquisar')" data-userview="pesquisar" class="btn-sub flex-1 py-2 px-2 rounded-full shadow hover:bg-gray-500">PESQUISAR</button><button onclick="deleteCurrentUser()" class="btn-sub flex-1 py-2 px-2 bg-red-500 text-white rounded-full shadow hover:bg-red-600">EXCLUIR</button></div><div id="user-form-view"><div class="space-y-3 text-sm"><input id="user-vencimento" type="date" class="w-full p-2 rounded-lg"><div id="user-vencimento-label" class="w-full p-2 rounded-lg bg-cyan-800 text-white text-center"></div><input id="user-id" type="text" placeholder="ID (automático)" class="w-full p-2 rounded-lg" disabled><input id="user-name" type="text" placeholder="Nome" class="w-full p-2 rounded-lg"><input id="user-password" type="text" placeholder="Senha" class="w-full p-2 rounded-lg"><div class="flex space-x-2"><input id="user-login" type="text" placeholder="Login" class="flex-grow p-2 rounded-lg"><button class="bg-green-500 hover:bg-green-600 text-white font-bold p-2 rounded-lg" onclick="saveCurrentUser()">Salvar</button></div></div><div class="mt-4"><h3 class="text-center font-bold text-white bg-black/20 rounded-full py-1 my-2">HISTÓRICO DO USUÁRIO</h3><div id="user-history-log" class="history-box bg-white/80 p-2 rounded-lg h-32 overflow-y-auto text-sm space-y-1"></div></div></div><div id="user-pesquisar-view" class="hidden"><input type="text" id="user-search-input" onkeyup="renderUsers()" placeholder="Pesquisar..." class="w-full p-2 rounded-lg mb-2"><div id="user-list" class="history-box bg-white/80 p-2 rounded-lg h-[25rem] overflow-y-auto text-sm space-y-2"></div></div></div>
-            <div id="adc-prompts-page" class="page-content rounded-2xl p-4"><div class="flex justify-around items-center mb-4 text-xs space-x-2"><button onclick="newPrompt()" data-view="novo" class="btn-sub-prompt flex-1 py-2 px-2 rounded-full shadow hover:bg-lime-500">NOVO</button><button onclick="showPromptView('pesquisar')" data-view="pesquisar" class="btn-sub-prompt flex-1 py-2 px-2 rounded-full shadow hover:bg-gray-500">PESQUISAR</button><button onclick="deleteCurrentPrompt()" class="flex-1 py-2 px-2 bg-red-500 text-white rounded-full shadow hover:bg-red-600">EXCLUIR</button></div><div id="prompt-novo-view"><div class="space-y-3 text-sm"><div class="my-2 h-32 bg-white/30 rounded-lg flex items-center justify-center overflow-hidden border-2 border-dashed border-white/40"><img id="prompt-image-preview" src="" class="hidden h-full w-full object-contain"><span id="image-placeholder" class="text-white/80">Imagem</span></div><input type="file" id="prompt-image-input" class="hidden" accept="image/*"><button onclick="document.getElementById('prompt-image-input').click()" class="w-full p-2 rounded-lg bg-blue-500 text-white font-semibold hover:bg-blue-600">Selecionar Imagem</button><input type="text" id="prompt-id" placeholder="ID (automático)" class="w-full p-2 rounded-lg" disabled><input type="text" id="prompt-marca-ia" placeholder="Marca IA (ex: Gemini)" class="w-full p-2 rounded-lg"><input type="text" id="prompt-category" placeholder="Categoria (ex: Divertido)" class="w-full p-2 rounded-lg"><input type="text" id="prompt-description" placeholder="Descrição" class="w-full p-2 rounded-lg"><input type="text" id="prompt-link" placeholder="Link da IA" class="w-full p-2 rounded-lg"><textarea id="prompt-text" placeholder="Texto do prompt..." class="w-full p-2 rounded-lg h-24 resize-none"></textarea><button class="w-full p-2 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600" onclick="saveCurrentPrompt()">SALVAR</button></div></div><div id="prompt-pesquisar-view" class="hidden"><input type="text" id="prompt-search-input" onkeyup="renderPrompts()" placeholder="Pesquisar..." class="w-full p-2 rounded-lg"><div id="prompt-list" class="history-box bg-white/80 p-2 rounded-lg h-[25.5rem] overflow-y-auto text-sm space-y-2"></div></div></div>
+            <div id="adc-prompts-page" class="page-content rounded-2xl p-4"><div class="flex justify-around items-center mb-4 text-xs space-x-2"><button onclick="newPrompt()" data-view="novo" class="btn-sub-prompt flex-1 py-2 px-2 rounded-full shadow hover:bg-lime-500">NOVO</button><button onclick="showPromptView('pesquisar')" data-view="pesquisar" class="btn-sub-prompt flex-1 py-2 px-2 rounded-full shadow hover:bg-gray-500">PESQUISAR</button><button onclick="deleteCurrentPrompt()" class="flex-1 py-2 px-2 bg-red-500 text-white rounded-full shadow hover:bg-red-600">EXCLUIR</button></div><div id="prompt-novo-view"><div class="space-y-3 text-sm"><div class="my-2 h-32 bg-white/30 rounded-lg flex items-center justify-center overflow-hidden border-2 border-dashed border-white/40"><img id="prompt-image-preview" src="" class="hidden h-full w-full object-contain" data-original-url=""><span id="image-placeholder" class="text-white/80">Imagem</span></div><input type="file" id="prompt-image-input" class="hidden" accept="image/*"><button onclick="document.getElementById('prompt-image-input').click()" class="w-full p-2 rounded-lg bg-blue-500 text-white font-semibold hover:bg-blue-600">Selecionar Imagem</button><input type="text" id="prompt-id" placeholder="ID (automático)" class="w-full p-2 rounded-lg" disabled><input type="text" id="prompt-marca-ia" placeholder="Marca IA (ex: Gemini)" class="w-full p-2 rounded-lg"><input type="text" id="prompt-category" placeholder="Categoria (ex: Divertido)" class="w-full p-2 rounded-lg"><input type="text" id="prompt-description" placeholder="Descrição" class="w-full p-2 rounded-lg"><input type="text" id="prompt-link" placeholder="Link da IA" class="w-full p-2 rounded-lg"><textarea id="prompt-text" placeholder="Texto do prompt..." class="w-full p-2 rounded-lg h-24 resize-none"></textarea><button id="save-prompt-button" class="w-full p-2 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600" onclick="saveCurrentPrompt()">SALVAR</button></div></div><div id="prompt-pesquisar-view" class="hidden"><input type="text" id="prompt-search-input" onkeyup="renderPrompts()" placeholder="Pesquisar..." class="w-full p-2 rounded-lg"><div id="prompt-list" class="history-box bg-white/80 p-2 rounded-lg h-[25.5rem] overflow-y-auto text-sm space-y-2"></div></div></div>
         </main>
         <footer class="text-center mt-6 text-white/70 text-sm">By: A.Yoshi</footer>
     </div>
-    <!-- Bibliotecas para gerar PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- Scripts do Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
     <script>
         const firebaseConfig = {
           apiKey: "AIzaSyAg37Z0ahi-a_jNt_X89UUY1oj7RiNuMFs",
@@ -60,6 +58,7 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        const storage = firebase.storage();
         let allUsers = [], allPrompts = [], allLogs = [], onConfirmAction = () => {};
         document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('admin-name').textContent = sessionStorage.getItem('username') || 'Admin';
@@ -82,11 +81,8 @@
                 allLogs = logsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             } catch (error) { 
                 console.error("Erro ao carregar dados:", error); 
-                if (error.code === 'permission-denied') {
-                    showNotification("Erro de Permissão: Verifique as Regras de Segurança do Firestore.");
-                } else {
-                    showNotification("Falha ao carregar dados. Verifique a conexão.");
-                }
+                if (error.code === 'permission-denied') { showNotification("Erro de Permissão: Verifique as Regras de Segurança do Firestore."); } 
+                else { showNotification("Falha ao carregar dados. Verifique a conexão."); }
             }
         }
         function showPage(pageId) {
@@ -96,6 +92,99 @@
             if (pageId === 'monitorar') renderGlobalActivityLog();
             if (pageId === 'adc-prompts') { newPrompt(); renderPrompts(); }
             if (pageId === 'cadastrar') { newUser(); renderUsers(); }
+        }
+        async function saveCurrentPrompt() {
+            const saveButton = document.getElementById('save-prompt-button');
+            saveButton.disabled = true;
+            saveButton.textContent = 'SALVANDO...';
+            const promptId = document.getElementById('prompt-id').value;
+            const imageFile = document.getElementById('prompt-image-input').files[0];
+            let imageUrl = document.getElementById('prompt-image-preview').getAttribute('data-original-url');
+            if (imageFile) {
+                showNotification("Enviando imagem...");
+                const filePath = `prompt_images/${Date.now()}_${imageFile.name}`;
+                const storageRef = storage.ref(filePath);
+                try {
+                    const snapshot = await storageRef.put(imageFile);
+                    imageUrl = await snapshot.ref.getDownloadURL();
+                } catch (error) {
+                    console.error("Erro ao enviar imagem:", error);
+                    showNotification("Falha no upload da imagem.");
+                    saveButton.disabled = false;
+                    saveButton.textContent = 'SALVAR';
+                    return;
+                }
+            }
+            const promptData = { 
+                marca_ia: document.getElementById('prompt-marca-ia').value.trim(), 
+                category: document.getElementById('prompt-category').value.trim(), 
+                description: document.getElementById('prompt-description').value.trim(), 
+                link: document.getElementById('prompt-link').value.trim(), 
+                text: document.getElementById('prompt-text').value.trim(), 
+                image: imageUrl || '',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp() 
+            };
+            if (!promptData.description || !promptData.category || !promptData.marca_ia) { 
+                showNotification("Preencha Descrição, Categoria e Marca IA."); 
+                saveButton.disabled = false;
+                saveButton.textContent = 'SALVAR';
+                return; 
+            }
+            try {
+                if (promptId) { 
+                    delete promptData.createdAt; 
+                    await db.collection('prompts').doc(promptId).set(promptData, { merge: true }); 
+                } else { 
+                    const docRef = await db.collection('prompts').add(promptData); 
+                    document.getElementById('prompt-id').value = docRef.id; 
+                }
+                showNotification('Prompt salvo!');
+                await loadAllData(); 
+                renderPrompts();
+            } catch (error) { 
+                console.error("Erro ao salvar prompt:", error); 
+                showNotification("Erro ao salvar prompt."); 
+            } finally {
+                saveButton.disabled = false;
+                saveButton.textContent = 'SALVAR';
+            }
+        }
+        function handleImagePreview(event) { 
+            const file = event.target.files[0]; 
+            if (file) { 
+                const reader = new FileReader(); 
+                reader.onload = e => { 
+                    const preview = document.getElementById('prompt-image-preview');
+                    preview.src = e.target.result; 
+                    preview.classList.remove('hidden'); 
+                    document.getElementById('image-placeholder').classList.add('hidden');
+                }; 
+                reader.readAsDataURL(file); 
+            } 
+        }
+        function clearPromptForm() { 
+            ['prompt-id', 'prompt-marca-ia', 'prompt-category', 'prompt-description', 'prompt-link', 'prompt-text', 'prompt-image-input'].forEach(id => document.getElementById(id).value = ''); 
+            const preview = document.getElementById('prompt-image-preview');
+            preview.src = ''; 
+            preview.setAttribute('data-original-url', '');
+            preview.classList.add('hidden'); 
+            document.getElementById('image-placeholder').classList.remove('hidden'); 
+        }
+        function populatePromptForm(prompt) {
+            clearPromptForm();
+            document.getElementById('prompt-id').value = prompt.id;
+            document.getElementById('prompt-marca-ia').value = prompt.marca_ia;
+            document.getElementById('prompt-category').value = prompt.category;
+            document.getElementById('prompt-description').value = prompt.description;
+            document.getElementById('prompt-link').value = prompt.link || '';
+            document.getElementById('prompt-text').value = prompt.text;
+            if (prompt.image) {
+                const preview = document.getElementById('prompt-image-preview');
+                preview.src = prompt.image;
+                preview.setAttribute('data-original-url', prompt.image);
+                preview.classList.remove('hidden');
+                document.getElementById('image-placeholder').classList.add('hidden');
+            }
         }
         function renderGlobalActivityLog() {
             const container = document.getElementById('global-history-log');
@@ -110,21 +199,6 @@
             document.querySelectorAll('#cadastrar-page .btn-sub').forEach(btn => btn.classList.toggle('active', btn.dataset.userview === viewName));
         }
         function newUser() { clearUserForm(); showUserView('form'); }
-        function clearUserForm() {
-            ['user-id', 'user-name', 'user-password', 'user-login', 'user-vencimento'].forEach(id => document.getElementById(id).value = '');
-            document.getElementById('user-vencimento-label').textContent = 'Selecione uma data';
-            document.getElementById('user-history-log').innerHTML = '<p>Nenhuma atividade registrada.</p>';
-        }
-        function populateUserForm(user) {
-            document.getElementById('user-id').value = user.id;
-            document.getElementById('user-name').value = user.name;
-            document.getElementById('user-password').value = user.password;
-            document.getElementById('user-login').value = user.login;
-            document.getElementById('user-vencimento').value = user.vencimento;
-            updateUserVencimentoLabel();
-            const userLogs = allLogs.filter(log => log.userId === user.id);
-            document.getElementById('user-history-log').innerHTML = userLogs.length === 0 ? '<p>Nenhuma atividade.</p>' : userLogs.map(log => `<p>${log.timestamp.toDate().toLocaleString('pt-BR')}: ${log.action}</p>`).join('');
-        }
         function editUser(userId) { const user = allUsers.find(u => u.id === userId); if (user) { populateUserForm(user); showUserView('form'); } }
         async function saveCurrentUser() {
             const userId = document.getElementById('user-id').value;
@@ -155,36 +229,9 @@
             });
         }
         function updateUserVencimentoLabel() { const dateValue = document.getElementById('user-vencimento').value; if(dateValue) { const [y,m,d] = dateValue.split('-'); document.getElementById('user-vencimento-label').textContent = `Vence em ${d}/${m}/${y}`; } }
-        function handleImagePreview(event) { const file = event.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = e => { document.getElementById('prompt-image-preview').src = e.target.result; document.getElementById('prompt-image-preview').classList.remove('hidden'); document.getElementById('image-placeholder').classList.add('hidden'); }; reader.readAsDataURL(file); } }
         function newPrompt() { clearPromptForm(); showPromptView('novo'); }
         function showPromptView(viewName) { document.getElementById('prompt-novo-view').classList.toggle('hidden', viewName !== 'novo'); document.getElementById('prompt-pesquisar-view').classList.toggle('hidden', viewName === 'novo'); }
-        function clearPromptForm() { ['prompt-id', 'prompt-marca-ia', 'prompt-category', 'prompt-description', 'prompt-link', 'prompt-text', 'prompt-image-input'].forEach(id => document.getElementById(id).value = ''); document.getElementById('prompt-image-preview').src = ''; document.getElementById('prompt-image-preview').classList.add('hidden'); document.getElementById('image-placeholder').classList.remove('hidden'); }
-        function populatePromptForm(prompt) {
-            clearPromptForm();
-            document.getElementById('prompt-id').value = prompt.id;
-            document.getElementById('prompt-marca-ia').value = prompt.marca_ia;
-            document.getElementById('prompt-category').value = prompt.category;
-            document.getElementById('prompt-description').value = prompt.description;
-            document.getElementById('prompt-link').value = prompt.link || '';
-            document.getElementById('prompt-text').value = prompt.text;
-            if (prompt.image && prompt.image.startsWith('data:image')) {
-                document.getElementById('prompt-image-preview').src = prompt.image;
-                document.getElementById('prompt-image-preview').classList.remove('hidden');
-                document.getElementById('image-placeholder').classList.add('hidden');
-            }
-        }
         function editPrompt(promptId) { const prompt = allPrompts.find(p => p.id === promptId); if (prompt) { populatePromptForm(prompt); showPromptView('novo'); } }
-        async function saveCurrentPrompt() {
-            const promptId = document.getElementById('prompt-id').value;
-            const promptData = { marca_ia: document.getElementById('prompt-marca-ia').value.trim(), category: document.getElementById('prompt-category').value.trim(), description: document.getElementById('prompt-description').value.trim(), link: document.getElementById('prompt-link').value.trim(), text: document.getElementById('prompt-text').value.trim(), image: document.getElementById('prompt-image-preview').src, createdAt: firebase.firestore.FieldValue.serverTimestamp() };
-            if (!promptData.description || !promptData.category || !promptData.marca_ia) { showNotification("Preencha Descrição, Categoria e Marca IA."); return; }
-            try {
-                if (promptId) { delete promptData.createdAt; await db.collection('prompts').doc(promptId).set(promptData, { merge: true }); }
-                else { const docRef = await db.collection('prompts').add(promptData); document.getElementById('prompt-id').value = docRef.id; }
-                showNotification('Prompt salvo!');
-                await loadAllData(); renderPrompts();
-            } catch (error) { console.error("Erro ao salvar prompt:", error); showNotification("Erro ao salvar."); }
-        }
         function renderPrompts() {
             const searchTerm = document.getElementById('prompt-search-input').value.toLowerCase();
             const container = document.getElementById('prompt-list');
@@ -194,8 +241,17 @@
         async function deleteCurrentPrompt() {
             const promptId = document.getElementById('prompt-id').value;
             if (!promptId) { showNotification("Nenhum prompt selecionado."); return; }
-            showConfirm(`Excluir o prompt "${document.getElementById('prompt-description').value}"?`, async () => {
+            const prompt = allPrompts.find(p => p.id === promptId);
+            showConfirm(`Excluir o prompt "${prompt.description}"?`, async () => {
                 try {
+                    if (prompt && prompt.image) {
+                        try {
+                            const imageRef = storage.refFromURL(prompt.image);
+                            await imageRef.delete();
+                        } catch (storageError) {
+                            console.warn("Imagem não encontrada no Storage, pode já ter sido removida:", storageError);
+                        }
+                    }
                     await db.collection('prompts').doc(promptId).delete();
                     showNotification(`Prompt excluído!`);
                     await loadAllData(); newPrompt(); renderPrompts();
@@ -205,8 +261,6 @@
         function showNotification(message) { const el = document.getElementById('notification-modal'); el.querySelector('p').textContent = message; el.classList.remove('hidden'); setTimeout(() => el.classList.add('hidden'), 3500); }
         function showConfirm(message, callback) { const el = document.getElementById('confirm-modal'); el.querySelector('p').textContent = message; onConfirmAction = callback || (() => {}); el.classList.remove('hidden'); }
         function closeConfirm() { document.getElementById('confirm-modal').classList.add('hidden'); }
-
-        // --- FUNÇÕES DE BACKUP, RESTORE E PDF ---
         function saveAsPDF() {
             const { jsPDF } = window.jspdf;
             const logContainer = document.getElementById('global-history-log');
@@ -221,22 +275,14 @@
                 pdf.save(`historico_yoshi_prompts_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`);
             }).catch(err => { console.error("Erro ao gerar PDF:", err); showNotification("Falha ao gerar o PDF."); });
         }
-
         function backupData() {
             showNotification("Preparando backup...");
             const dataToBackup = { users: allUsers, prompts: allPrompts, activityLog: allLogs, exportedAt: new Date().toISOString() };
             const blob = new Blob([JSON.stringify(dataToBackup, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `backup_yoshi_prompts_${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            const a = document.createElement('a'); a.href = url; a.download = `backup_yoshi_prompts_${new Date().toISOString().split('T')[0]}.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
             showNotification('Backup baixado com sucesso!');
         }
-
         function triggerRestore() {
             const input = document.createElement('input');
             input.type = 'file'; input.accept = '.json';
@@ -255,12 +301,10 @@
             };
             input.click();
         }
-
         async function restoreData(data) {
             showNotification("Restaurando... Não feche a página.");
             try {
                 const batch = db.batch();
-                // Limpar coleções é complexo no cliente, então esta operação irá sobrescrever/adicionar.
                 data.users.forEach(user => { const docRef = user.id ? db.collection('users').doc(user.id) : db.collection('users').doc(); batch.set(docRef, user); });
                 data.prompts.forEach(prompt => { const docRef = prompt.id ? db.collection('prompts').doc(prompt.id) : db.collection('prompts').doc(); batch.set(docRef, prompt); });
                 data.activityLog.forEach(log => { const docRef = log.id ? db.collection('activityLog').doc(log.id) : db.collection('activityLog').doc(); batch.set(docRef, log); });
