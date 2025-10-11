@@ -1,3 +1,44 @@
-git add .
-git commit -m "Corrige workflow para deploy HTML"
-git push
+# 🚀 Deploy automático de site HTML no GitHub Pages
+name: Deploy static HTML to GitHub Pages
+
+on:
+  # Executa quando fizer push na branch principal
+  push:
+    branches:
+      - main
+  # Permite rodar manualmente pela aba "Actions"
+  workflow_dispatch:
+
+# Permissões para publicar no Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Evita builds duplicados
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # Faz o checkout do repositório
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Configura o GitHub Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # Envia os arquivos HTML, CSS, JS, imagens, etc.
+      - name: Upload static files
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .  # se o site estiver dentro de uma pasta, muda aqui (ex: ./site)
+
+      # Publica no GitHub Pages
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
