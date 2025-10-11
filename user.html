@@ -78,7 +78,7 @@
                 document.getElementById('user-name').textContent = currentUsername.toUpperCase();
                 logActivity('Login');
             } else {
-                window.location.href = './login.html'; // Redireciona se não estiver logado
+                window.location.href = './index.html'; // Redireciona se não estiver logado
             }
 
             // Carrega os prompts do localStorage
@@ -105,7 +105,7 @@
             logActivity('Logout');
             // Pequeno delay para garantir que o log seja salvo antes de redirecionar
             setTimeout(() => {
-                window.location.href = 'login.html';
+                window.location.href = 'index.html';
             }, 100);
         }
 
