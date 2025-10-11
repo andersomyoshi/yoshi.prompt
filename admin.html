@@ -12,26 +12,13 @@
         .btn-main.active { background-color: #22c55e; color: white; transform: scale(1.05); }
         .btn-sub.active, .btn-sub-prompt.active { background-color: #16a34a; color: white; }
         .page-content { background-color: rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px); }
-        .history-box::-webkit-scrollbar { width: 5px; }
-        .history-box::-webkit-scrollbar-track { background: transparent; }
-        .history-box::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.3); border-radius: 10px; }
+        .history-box::-webkit-scrollbar { width: 5px; } .history-box::-webkit-scrollbar-track { background: transparent; } .history-box::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.3); border-radius: 10px; }
     </style>
 </head>
 <body class="text-gray-800">
 
-    <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50 p-4">
-        <div class="bg-white p-6 rounded-lg shadow-xl text-center max-w-sm w-full">
-            <p id="confirm-message" class="mb-4 text-lg">Tem certeza?</p>
-            <div class="flex justify-center space-x-4">
-                <button id="confirm-yes" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg">Sim</button>
-                <button id="confirm-no" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded-lg">Não</button>
-            </div>
-        </div>
-    </div>
-    
-    <div id="notification-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-        <div class="bg-white p-6 rounded-lg shadow-xl text-center"><p id="notification-message"></p></div>
-    </div>
+    <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50 p-4"></div>
+    <div id="notification-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50"></div>
 
     <div class="main-container min-h-screen p-4 flex flex-col">
         <header class="flex justify-between items-center mb-4 text-white">
@@ -48,384 +35,182 @@
         <main class="flex-grow">
             <div id="monitorar-page" class="page-content rounded-2xl p-4 hidden">
                 <h2 class="text-center font-bold text-white bg-black/20 rounded-full py-2 mb-4">HISTÓRICO DE ATIVIDADES GERAL</h2>
-                <div id="global-history-log" class="history-box bg-white/80 p-4 rounded-lg h-96 overflow-y-auto text-sm space-y-2"></div>
-                 <div class="mt-6 flex justify-center space-x-4">
-                    <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg" onclick="backupData()">Fazer Backup</button>
-                    <button class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg" onclick="triggerRestore()">Restaurar Backup</button>
-                </div>
+                <div id="global-history-log" class="history-box bg-white/80 p-4 rounded-lg h-96 overflow-y-auto text-sm space-y-2">Carregando logs...</div>
             </div>
 
-            <div id="cadastrar-page" class="page-content rounded-2xl p-4 hidden">
-                <div class="flex justify-around items-center mb-4 text-xs space-x-2">
-                    <button onclick="newUser()" data-userview="novo" class="btn-sub flex-1 py-2 px-2 rounded-full shadow hover:bg-lime-500">NOVO</button>
-                    <button onclick="showUserView('pesquisar')" data-userview="pesquisar" class="btn-sub flex-1 py-2 px-2 rounded-full shadow hover:bg-gray-500">PESQUISAR</button>
-                    <button onclick="deleteCurrentUser()" class="btn-sub flex-1 py-2 px-2 bg-red-500 text-white rounded-full shadow hover:bg-red-600">EXCLUIR</button>
-                </div>
-                
-                <div id="user-form-view">
-                    <div class="space-y-3 text-sm">
-                        <input id="user-vencimento" type="date" class="w-full p-2 rounded-lg" value="2025-12-31">
-                        <div id="user-vencimento-label" class="w-full p-2 rounded-lg bg-cyan-800 text-white text-center">Vence dia 31/12/2025</div>
-                        <input id="user-id" type="text" placeholder="Código: (automático)" class="w-full p-2 rounded-lg" disabled>
-                        <input id="user-name" type="text" placeholder="Nome: " class="w-full p-2 rounded-lg">
-                        <input id="user-password" type="text" placeholder="Senha: " class="w-full p-2 rounded-lg">
-                        <div class="flex space-x-2">
-                            <input id="user-login" type="text" placeholder="Login: " class="flex-grow p-2 rounded-lg">
-                            <button class="bg-green-500 hover:bg-green-600 text-white font-bold p-2 rounded-lg" onclick="saveCurrentUser()">Salvar</button>
-                        </div>
-                    </div>
-                     <div class="mt-4">
-                        <h3 class="text-center font-bold text-white bg-black/20 rounded-full py-1 my-2">HISTÓRICO DE ATIVIDADES</h3>
-                        <div id="user-history-log" class="history-box bg-white/80 p-2 rounded-lg h-32 overflow-y-auto text-sm space-y-1"></div>
-                        <div class="flex justify-end space-x-2 mt-2">
-                             <button class="bg-red-500 text-white text-xs font-bold p-2 rounded-lg" onclick="showConfirm('Limpar o histórico deste usuário?', clearUserHistory)">LIMPAR</button>
-                        </div>
-                    </div>
-                </div>
-                <div id="user-pesquisar-view" class="hidden">
-                     <input type="text" id="user-search-input" onkeyup="renderUsers()" placeholder="Pesquisar por nome ou login..." class="w-full p-2 rounded-lg mb-2">
-                     <div id="user-list" class="history-box bg-white/80 p-2 rounded-lg h-[25rem] overflow-y-auto text-sm space-y-2"></div>
-                </div>
-            </div>
+            <div id="cadastrar-page" class="page-content rounded-2xl p-4 hidden"></div>
 
-            <div id="adc-prompts-page" class="page-content rounded-2xl p-4">
-                 <div class="flex justify-around items-center mb-4 text-xs space-x-2">
-                    <button onclick="newPrompt()" data-view="novo" class="btn-sub-prompt flex-1 py-2 px-2 rounded-full shadow hover:bg-lime-500">NOVO</button>
-                    <button onclick="showPromptView('pesquisar')" data-view="pesquisar" class="btn-sub-prompt flex-1 py-2 px-2 rounded-full shadow hover:bg-gray-500">PESQUISAR</button>
-                    <button onclick="deleteCurrentPrompt()" class="btn-sub-prompt flex-1 py-2 px-2 bg-red-500 text-white rounded-full shadow hover:bg-red-600">EXCLUIR</button>
-                </div>
-                
-                <div id="prompt-novo-view">
-                    <div class="space-y-3 text-sm">
-                        <div class="my-2 h-32 bg-white/30 rounded-lg flex items-center justify-center overflow-hidden border-2 border-dashed border-white/40">
-                            <img id="prompt-image-preview" src="" class="hidden h-full w-full object-contain">
-                            <span id="image-placeholder" class="text-white/80">Visualização da Imagem</span>
-                        </div>
-                        <input type="file" id="prompt-image-input" class="hidden" accept="image/*">
-                        <button onclick="document.getElementById('prompt-image-input').click()" class="w-full p-2 rounded-lg bg-blue-500 text-white font-semibold hover:bg-blue-600">Selecionar Imagem</button>
-                        <input type="text" id="prompt-id" placeholder="Código: (automático)" class="w-full p-2 rounded-lg" disabled>
-                        
-                        <input type="text" id="prompt-marca-ia" placeholder="Marca IA: (ex: Gemini, Midjourney)" class="w-full p-2 rounded-lg">
-                        
-                        <input type="text" id="prompt-category" placeholder="Categoria: (ex: Divertido, Profissional)" class="w-full p-2 rounded-lg">
-                        <input type="text" id="prompt-description" placeholder="Descrição: Cosplay de Witcher" class="w-full p-2 rounded-lg">
-                        <input type="text" id="prompt-link" placeholder="Link da IA: https://gemini.google.com/" class="w-full p-2 rounded-lg">
-                        <textarea id="prompt-text" placeholder="Texto do prompt..." class="w-full p-2 rounded-lg h-24 resize-none"></textarea>
-                        <button class="w-full p-2 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600" onclick="saveCurrentPrompt()">SALVAR</button>
-                    </div>
-                </div>
-
-                <div id="prompt-pesquisar-view" class="hidden">
-                    <input type="text" id="prompt-search-input" onkeyup="renderPrompts()" placeholder="Pesquisar por descrição ou categoria..." class="w-full p-2 rounded-lg">
-                    <div id="prompt-list" class="history-box bg-white/80 p-2 rounded-lg h-[25.5rem] overflow-y-auto text-sm space-y-2"></div>
-                </div>
-            </div>
+            <div id="adc-prompts-page" class="page-content rounded-2xl p-4"></div>
         </main>
         
         <footer class="text-center mt-6 text-white/70 text-sm">By: A.Yoshi</footer>
     </div>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
     <script>
-        // ... (todo o script anterior, com as seguintes funções modificadas) ...
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
-        // --- FUNÇÕES DE PROMPTS (ADC. PROMPTS) ---
-        function clearPromptForm() {
-            // ... (campos anteriores) ...
-            document.getElementById('prompt-id').value = '';
-            document.getElementById('prompt-description').value = '';
-            document.getElementById('prompt-category').value = '';
-            document.getElementById('prompt-marca-ia').value = ''; // NOVO
-            document.getElementById('prompt-link').value = '';
-            document.getElementById('prompt-text').value = '';
-            // ... (lógica da imagem) ...
-             const preview = document.getElementById('prompt-image-preview');
-            const placeholder = document.getElementById('image-placeholder');
-            preview.src = '';
-            preview.classList.add('hidden');
-            placeholder.classList.remove('hidden');
-            document.getElementById('prompt-image-input').value = null;
-        }
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAg37Z0ahi-a_jNt_X89UUY1oj7RiNuMFs",
+  authDomain: "yoshi-prompts-app.firebaseapp.com",
+  projectId: "yoshi-prompts-app",
+  storageBucket: "yoshi-prompts-app.firebasestorage.app",
+  messagingSenderId: "509816669209",
+  appId: "1:509816669209:web:695a6c4bd2d18014371688"
+};
 
-        function populatePromptForm(prompt) {
-            // ... (campos anteriores) ...
-            document.getElementById('prompt-id').value = prompt.id;
-            document.getElementById('prompt-description').value = prompt.description;
-            document.getElementById('prompt-category').value = prompt.category;
-            document.getElementById('prompt-marca-ia').value = prompt.marca_ia || ''; // NOVO
-            document.getElementById('prompt-link').value = prompt.link || '';
-            document.getElementById('prompt-text').value = prompt.text;
-            // ... (lógica da imagem) ...
-            const preview = document.getElementById('prompt-image-preview');
-            const placeholder = document.getElementById('image-placeholder');
-            if (prompt.image && prompt.image.startsWith('data:image')) {
-                preview.src = prompt.image;
-                preview.classList.remove('hidden');
-                placeholder.classList.add('hidden');
-            } else {
-                preview.src = '';
-                preview.classList.add('hidden');
-                placeholder.classList.remove('hidden');
-            }
-            document.getElementById('prompt-image-input').value = null;
-        }
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 
-        function saveCurrentPrompt() {
-            const promptId = document.getElementById('prompt-id').value;
-            const promptDesc = document.getElementById('prompt-description').value.trim();
-            const promptCat = document.getElementById('prompt-category').value.trim();
-            const promptMarcaIa = document.getElementById('prompt-marca-ia').value.trim(); // NOVO
-            
-            if (!promptDesc || !promptCat || !promptMarcaIa) {
-                showNotification("Preencha Descrição, Categoria e Marca IA.");
-                return;
-            }
+        // Inicializa o Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-            const imageData = document.getElementById('prompt-image-preview').src;
-            const promptData = {
-                description: promptDesc,
-                category: promptCat,
-                marca_ia: promptMarcaIa, // NOVO
-                link: document.getElementById('prompt-link').value.trim(),
-                text: document.getElementById('prompt-text').value.trim(),
-                image: imageData.startsWith('data:image') ? imageData : ''
-            };
-
-            if (promptId) {
-                const index = allPrompts.findIndex(p => p.id === promptId);
-                if (index > -1) allPrompts[index] = { ...allPrompts[index], ...promptData };
-            } else {
-                const newPromptData = { id: 'prompt' + Date.now(), ...promptData };
-                allPrompts.push(newPromptData);
-                populatePromptForm(newPromptData);
-            }
-            savePromptsToStorage();
-            showNotification('Prompt salvo com sucesso!');
-        }
-        
-        // --- COLE O RESTANTE DO SCRIPT DO SEU ARQUIVO ORIGINAL AQUI ---
-        // As funções não listadas acima permanecem as mesmas.
-        // É importante copiar todo o script para garantir que tudo funcione.
-        let onConfirmAction = () => {};
         let allUsers = [];
         let allPrompts = [];
-        let activityLog = [];
+        let allLogs = [];
 
-        document.addEventListener('DOMContentLoaded', () => {
-            allUsers = JSON.parse(localStorage.getItem('yoshiPromptsUsers')) || [];
-            allPrompts = JSON.parse(localStorage.getItem('yoshiPrompts')) || [];
-            activityLog = JSON.parse(localStorage.getItem('yoshiPromptsActivityLog')) || [];
-
-            document.getElementById('admin-name').textContent = localStorage.getItem('username') || 'Admin';
+        document.addEventListener('DOMContentLoaded', async () => {
+            document.getElementById('admin-name').textContent = sessionStorage.getItem('username') || 'Admin';
             
-            document.getElementById('confirm-yes').addEventListener('click', () => { onConfirmAction(); closeConfirm(); });
-            document.getElementById('confirm-no').addEventListener('click', closeConfirm);
-            document.getElementById('prompt-image-input').addEventListener('change', handleImagePreview);
-            document.getElementById('user-vencimento').addEventListener('change', updateUserVencimentoLabel);
-
-            showPage('adc-prompts'); // Inicia na página de prompts
+            // Carrega todos os dados do Firebase
+            await loadAllData();
+            
+            setupInitialPage(); // Configura a página inicial e os listeners
         });
-        
-        function saveUsersToStorage() { localStorage.setItem('yoshiPromptsUsers', JSON.stringify(allUsers)); }
-        function savePromptsToStorage() { localStorage.setItem('yoshiPrompts', JSON.stringify(allPrompts)); }
-        function saveLogToStorage() { localStorage.setItem('yoshiPromptsActivityLog', JSON.stringify(activityLog)); }
 
-        function showPage(pageId) {
-            ['monitorar-page', 'cadastrar-page', 'adc-prompts-page'].forEach(id => document.getElementById(id).classList.add('hidden'));
-            document.getElementById(pageId + '-page').classList.remove('hidden');
-            document.querySelectorAll('.btn-main').forEach(btn => btn.classList.toggle('active', btn.dataset.page === pageId));
-            
-            if (pageId === 'monitorar') renderGlobalActivityLog();
-            if (pageId === 'adc-prompts') newPrompt();
-            if (pageId === 'cadastrar') newUser();
-        }
+        async function loadAllData() {
+            try {
+                // Carrega usuários
+                const usersSnapshot = await db.collection('users').get();
+                allUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        function formatTimestamp(isoString) { return isoString ? new Date(isoString).toLocaleString('pt-BR') : 'Data indisponível'; }
-        
-        function renderGlobalActivityLog() {
-            const container = document.getElementById('global-history-log');
-            const reversedLog = [...activityLog].reverse();
-            container.innerHTML = reversedLog.length === 0 ? '<p class="text-center text-gray-600 p-4">Nenhuma atividade registrada.</p>' :
-                reversedLog.map(log => {
-                    let details = log.action === 'Copiou Prompt' && log.details ? ` - Prompt: "${log.details.promptDescription}"` : '';
-                    return `<div><p><strong>${log.userName || 'Usuário'}</strong> - ${formatTimestamp(log.timestamp)}: ${log.action}${details}</p><hr class="border-white/50 my-1"></div>`;
-                }).join('');
-        }
-        
-        function renderUserActivityLog(userId) {
-            const container = document.getElementById('user-history-log');
-            const userLog = activityLog.filter(log => log.userId === userId).reverse();
-            container.innerHTML = userLog.length === 0 ? '<p>Nenhuma atividade.</p>' :
-                userLog.map(log => `<p><strong>${formatTimestamp(log.timestamp)}:</strong> ${log.action}</p>`).join('');
-        }
+                // Carrega prompts
+                const promptsSnapshot = await db.collection('prompts').get();
+                allPrompts = promptsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        function showUserView(viewName) {
-            document.getElementById('user-form-view').classList.toggle('hidden', viewName === 'pesquisar');
-            document.getElementById('user-pesquisar-view').classList.toggle('hidden', viewName !== 'pesquisar');
-            document.querySelectorAll('#cadastrar-page .btn-sub').forEach(btn => btn.classList.toggle('active', btn.dataset.userview === viewName));
-            if (viewName === 'pesquisar') { document.getElementById('user-search-input').value = ''; renderUsers(); }
-        }
-        function newUser() { clearUserForm(); showUserView('form'); }
-        function clearUserForm() {
-            ['user-id', 'user-name', 'user-password', 'user-login', 'user-vencimento'].forEach(id => document.getElementById(id).value = '');
-            document.getElementById('user-vencimento-label').textContent = 'Vence dia...';
-            document.getElementById('user-history-log').innerHTML = '<p>Nenhuma atividade registrada.</p>';
-        }
-        function populateUserForm(user) {
-            document.getElementById('user-id').value = user.id;
-            document.getElementById('user-name').value = user.name;
-            document.getElementById('user-password').value = user.password;
-            document.getElementById('user-login').value = user.login;
-            document.getElementById('user-vencimento').value = user.vencimento;
-            updateUserVencimentoLabel();
-            renderUserActivityLog(user.id);
-        }
-        function editUser(userId) { const user = allUsers.find(u => u.id === userId); if (user) { populateUserForm(user); showUserView('form'); } }
-        
-        function saveCurrentUser() {
-            const userId = document.getElementById('user-id').value;
-            const userName = document.getElementById('user-name').value.trim();
-            const userPassword = document.getElementById('user-password').value.trim();
-            const userLogin = document.getElementById('user-login').value.trim();
-            const userVencimento = document.getElementById('user-vencimento').value;
-            if (!userName || !userPassword || !userLogin) { showNotification("Preencha Nome, Senha e Login."); return; }
-            if (userId) {
-                const userIndex = allUsers.findIndex(u => u.id === userId);
-                if (userIndex > -1) allUsers[userIndex] = { ...allUsers[userIndex], name: userName, password: userPassword, login: userLogin, vencimento: userVencimento };
-            } else {
-                const newUser = { id: 'user' + Date.now(), name: userName, password: userPassword, login: userLogin, vencimento: userVencimento };
-                allUsers.push(newUser);
-                populateUserForm(newUser);
+                // Carrega logs
+                const logsSnapshot = await db.collection('activityLog').orderBy('timestamp', 'desc').get();
+                allLogs = logsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            } catch (error) {
+                console.error("Erro ao carregar dados do Firebase:", error);
+                showNotification("Falha ao carregar dados. Verifique a conexão.");
             }
-            saveUsersToStorage();
-            showNotification('Cadastro salvo com sucesso!');
         }
-        function renderUsers() {
-            const searchTerm = document.getElementById('user-search-input').value.toLowerCase();
-            const container = document.getElementById('user-list');
-            const filtered = allUsers.filter(u => u.name.toLowerCase().includes(searchTerm) || u.login.toLowerCase().includes(searchTerm));
-            container.innerHTML = filtered.length === 0 ? '<p class="text-center p-4">Nenhum usuário.</p>' :
-                filtered.map(user => `<div class="p-2 bg-white/50 rounded-md cursor-pointer hover:bg-white/80" onclick="editUser('${user.id}')"><p class="font-semibold">${user.name}</p><p class="text-xs text-cyan-800">${user.login}</p></div>`).join('');
+        
+        // --- FUNÇÕES DE NAVEGAÇÃO E LÓGICA DE UI ---
+        // (As funções de navegação, modais e UI como showPage, showNotification, etc. permanecem as mesmas)
+        // ... cole aqui as funções de UI do seu arquivo original ...
+        
+        // --- SEÇÃO DE USUÁRIOS ---
+        async function saveCurrentUser() {
+            const userId = document.getElementById('user-id').value;
+            const userData = {
+                name: document.getElementById('user-name').value.trim(),
+                password: document.getElementById('user-password').value.trim(),
+                login: document.getElementById('user-login').value.trim(),
+                vencimento: document.getElementById('user-vencimento').value,
+            };
+
+            if (!userData.name || !userData.password || !userData.login) {
+                showNotification("Preencha Nome, Senha e Login."); return;
+            }
+
+            try {
+                if (userId) { // Atualiza usuário existente
+                    await db.collection('users').doc(userId).update(userData);
+                } else { // Cria novo usuário
+                    const docRef = await db.collection('users').add(userData);
+                    document.getElementById('user-id').value = docRef.id; // Atualiza o ID no formulário
+                }
+                showNotification('Usuário salvo com sucesso!');
+                await loadAllData(); // Recarrega os dados
+                renderUsers(); // Re-renderiza a lista de usuários
+            } catch (error) {
+                console.error("Erro ao salvar usuário:", error);
+                showNotification("Erro ao salvar usuário.");
+            }
         }
-        function deleteCurrentUser() {
+
+        async function deleteCurrentUser() {
             const userId = document.getElementById('user-id').value;
             if (!userId) { showNotification("Nenhum usuário selecionado."); return; }
             const userName = document.getElementById('user-name').value;
-            showConfirm(`Excluir "${userName}"?`, () => {
-                allUsers = allUsers.filter(u => u.id !== userId);
-                saveUsersToStorage();
-                showNotification(`"${userName}" excluído!`);
-                newUser();
+            
+            showConfirm(`Deseja realmente excluir "${userName}"?`, async () => {
+                try {
+                    await db.collection('users').doc(userId).delete();
+                    showNotification(`Usuário "${userName}" excluído!`);
+                    await loadAllData();
+                    newUser();
+                    renderUsers();
+                } catch (error) {
+                    console.error("Erro ao excluir usuário:", error);
+                    showNotification("Erro ao excluir usuário.");
+                }
             });
         }
-        function clearUserHistory() {
-            const userId = document.getElementById('user-id').value;
-            if (!userId) { showNotification("Nenhum usuário selecionado."); return; }
-            activityLog = activityLog.filter(log => log.userId !== userId);
-            saveLogToStorage();
-            renderUserActivityLog(userId);
-            showNotification("Histórico limpo!");
-        }
-        function updateUserVencimentoLabel() {
-            const dateValue = document.getElementById('user-vencimento').value;
-            if (dateValue) {
-                const [year, month, day] = dateValue.split('-');
-                document.getElementById('user-vencimento-label').textContent = `Vence dia ${day}/${month}/${year}`;
-            }
-        }
         
-        function handleImagePreview(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    document.getElementById('prompt-image-preview').src = e.target.result;
-                    document.getElementById('prompt-image-preview').classList.remove('hidden');
-                    document.getElementById('image-placeholder').classList.add('hidden');
+        // --- SEÇÃO DE PROMPTS ---
+        async function saveCurrentPrompt() {
+            const promptId = document.getElementById('prompt-id').value;
+            const promptData = {
+                marca_ia: document.getElementById('prompt-marca-ia').value.trim(),
+                category: document.getElementById('prompt-category').value.trim(),
+                description: document.getElementById('prompt-description').value.trim(),
+                link: document.getElementById('prompt-link').value.trim(),
+                text: document.getElementById('prompt-text').value.trim(),
+                image: document.getElementById('prompt-image-preview').src,
+            };
+
+            if (!promptData.description || !promptData.category || !promptData.marca_ia) {
+                showNotification("Preencha Descrição, Categoria e Marca IA."); return;
+            }
+            
+            try {
+                if (promptId) {
+                    await db.collection('prompts').doc(promptId).update(promptData);
+                } else {
+                    const docRef = await db.collection('prompts').add(promptData);
+                    document.getElementById('prompt-id').value = docRef.id;
                 }
-                reader.readAsDataURL(file);
+                showNotification('Prompt salvo com sucesso!');
+                await loadAllData();
+                renderPrompts();
+            } catch (error) {
+                console.error("Erro ao salvar prompt:", error);
+                showNotification("Erro ao salvar prompt.");
             }
         }
-        function newPrompt() { clearPromptForm(); showPromptView('novo'); }
-        function showPromptView(viewName) {
-            document.getElementById('prompt-novo-view').classList.toggle('hidden', viewName !== 'novo');
-            document.getElementById('prompt-pesquisar-view').classList.toggle('hidden', viewName !== 'pesquisar');
-            document.querySelectorAll('#adc-prompts-page .btn-sub-prompt').forEach(btn => btn.classList.toggle('active', btn.dataset.view === viewName));
-            if (viewName === 'pesquisar') { document.getElementById('prompt-search-input').value = ''; renderPrompts(); }
-        }
-        function editPrompt(promptId) { const prompt = allPrompts.find(p => p.id === promptId); if (prompt) { populatePromptForm(prompt); showPromptView('novo'); } }
-        
-        function renderPrompts() {
-            const searchTerm = document.getElementById('prompt-search-input').value.toLowerCase();
-            const container = document.getElementById('prompt-list');
-            const filtered = allPrompts.filter(p => p.description.toLowerCase().includes(searchTerm) || p.category.toLowerCase().includes(searchTerm));
-            container.innerHTML = filtered.length === 0 ? '<p class="text-center p-4">Nenhum prompt.</p>' :
-                filtered.map(p => `<div class="p-2 bg-white/50 rounded-md cursor-pointer hover:bg-white/80" onclick="editPrompt('${p.id}')"><p class="font-semibold">${p.description}</p><p class="text-xs text-cyan-800 font-bold">${p.category.toUpperCase()}</p></div>`).join('');
-        }
-        function deleteCurrentPrompt() {
+
+        async function deleteCurrentPrompt() {
             const promptId = document.getElementById('prompt-id').value;
             if (!promptId) { showNotification("Nenhum prompt selecionado."); return; }
             const promptDesc = document.getElementById('prompt-description').value;
-            showConfirm(`Excluir o prompt "${promptDesc}"?`, () => {
-                allPrompts = allPrompts.filter(p => p.id !== promptId);
-                savePromptsToStorage();
-                showNotification(`Prompt excluído!`);
-                newPrompt();
+
+            showConfirm(`Deseja excluir o prompt "${promptDesc}"?`, async () => {
+                try {
+                    await db.collection('prompts').doc(promptId).delete();
+                    showNotification(`Prompt "${promptDesc}" excluído!`);
+                    await loadAllData();
+                    newPrompt();
+                    renderPrompts();
+                } catch (error) {
+                    console.error("Erro ao excluir prompt:", error);
+                    showNotification("Erro ao excluir prompt.");
+                }
             });
         }
         
-        function backupData() {
-            const dataToBackup = { users: allUsers, prompts: allPrompts, activityLog: activityLog };
-            const blob = new Blob([JSON.stringify(dataToBackup, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `backup_yoshi_prompts_${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-            showNotification('Backup baixado!');
-        }
-        function triggerRestore() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json';
-            input.onchange = e => {
-                const file = e.target.files[0];
-                const reader = new FileReader();
-                reader.onload = readerEvent => {
-                    try {
-                        const content = JSON.parse(readerEvent.target.result);
-                        if (content.users && content.prompts && content.activityLog) {
-                            showConfirm("Restaurar este backup substituirá TUDO. Continuar?", () => {
-                                allUsers = content.users;
-                                allPrompts = content.prompts;
-                                activityLog = content.activityLog;
-                                saveUsersToStorage();
-                                savePromptsToStorage();
-                                saveLogToStorage();
-                                showNotification('Backup restaurado! A página será recarregada.');
-                                setTimeout(() => location.reload(), 2000);
-                            });
-                        } else { showNotification("Arquivo de backup inválido."); }
-                    } catch (error) { showNotification("Erro ao ler o arquivo."); }
-                };
-                reader.readAsText(file, 'UTF-8');
-            };
-            input.click();
-        }
-
-        function showNotification(message) {
-            const modal = document.getElementById('notification-modal');
-            modal.querySelector('p').textContent = message;
-            modal.classList.remove('hidden');
-            setTimeout(() => modal.classList.add('hidden'), 2500);
-        }
-        function showConfirm(message, callback) {
-            document.getElementById('confirm-message').textContent = message;
-            onConfirmAction = callback || (() => {});
-            document.getElementById('confirm-modal').classList.remove('hidden');
-        }
-        function closeConfirm() { document.getElementById('confirm-modal').classList.add('hidden'); }
-
+        // ... Cole o resto do seu script aqui, adaptando as funções de renderização para usar as variáveis globais (allUsers, allPrompts, allLogs) ...
+        // Por exemplo, a função renderGlobalActivityLog agora usará 'allLogs' em vez de 'activityLog'.
     </script>
 </body>
 </html>
