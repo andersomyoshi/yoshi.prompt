@@ -53,6 +53,8 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
+        // Inicializa o Firebase
+        firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
         document.getElementById('login-form').addEventListener('submit', function(event) {
