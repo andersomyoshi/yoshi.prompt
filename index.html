@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yoshi Prompts - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #8bc6f2, #a18dce);
+            background-size: cover;
+            background-position: center;
+        }
+        .login-container {
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .title-text {
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.4);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-sm mx-auto text-center">
+        <header class="mb-8">
+            <img src="logo.png" alt="Logo Yoshi Prompts" class="mx-auto mb-4 rounded-full shadow-lg" style="width: 150px; height: 150px;">
+            <h1 class="text-5xl font-black text-white title-text">YOSHI PROMPTS</h1>
+            <p class="text-xl text-white/90 font-light title-text">PROMPTS PRONTOS, SÓ COPIE E COLE.</p>
+        </header>
+
+        <main>
+            <form id="login-form" class="login-container p-8 rounded-2xl shadow-2xl space-y-6">
+                <input type="text" id="username" placeholder="Username" class="w-full px-4 py-3 bg-white/80 rounded-full border-2 border-transparent focus:outline-none focus:border-cyan-400 transition-all text-gray-800 placeholder-gray-500">
+                <input type="password" id="password" placeholder="Password" class="w-full px-4 py-3 bg-white/80 rounded-full border-2 border-transparent focus:outline-none focus:border-cyan-400 transition-all text-gray-800 placeholder-gray-500">
+                
+                <p id="error-message" class="text-red-300 text-sm font-semibold hidden h-4"></p>
+
+                <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-full shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out">
+                    Login
+                </button>
+                <a href="#" class="text-sm text-white/70 hover:text-white transition-colors">Esqueceu a senha?</a>
+            </form>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            handleLogin();
+        });
+
+        function handleLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('error-message');
+
+            const admin = { login: 'admin', password: 'admin123' };
+            const allUsers = JSON.parse(localStorage.getItem('yoshiPromptsUsers')) || [];
+
+            // Limpa avisos de login anterior
+            localStorage.removeItem('expirationWarningDays');
+
+            if (username === admin.login && password === admin.password) {
+                localStorage.setItem('username', 'Administrador');
+                localStorage.setItem('userId', 'admin_user');
+                window.location.href = './admin.html';
+                return;
+            }
+            
+            const user = allUsers.find(u => u.login === username && u.password === password);
+            
+            if (user) {
+                const hoje = new Date();
+                hoje.setHours(0, 0, 0, 0); // Zera o tempo para comparar apenas a data
+
+                if (user.vencimento) {
+                    const vencimento = new Date(user.vencimento + 'T00:00:00'); // Garante que a data é lida corretamente
+                    
+                    if (vencimento < hoje) {
+                        errorMessage.textContent = 'Seu acesso expirou. Contate o suporte.';
+                        errorMessage.classList.remove('hidden');
+                        return;
+                    }
+
+                    // NOVO: Lógica de contagem regressiva
+                    const diffTime = vencimento - hoje;
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                    if (diffDays >= 0 && diffDays <= 5) {
+                        localStorage.setItem('expirationWarningDays', diffDays);
+                    }
+                }
+                
+                localStorage.setItem('username', user.name);
+                localStorage.setItem('userId', user.id);
+                window.location.href = './user.html';
+            } else {
+                errorMessage.textContent = 'Login ou senha inválidos.';
+                errorMessage.classList.remove('hidden');
+            }
+        }
+
+        if (!localStorage.getItem('yoshiPromptsUsers')) {
+            const defaultUsers = [
+                { id: 'user1', name: 'Talita Gomes Silva', password: 'A123456Y', login: 'talita', vencimento: '2025-10-15' }, // Vencimento em 4 dias a partir de 11/10/2025
+                { id: 'user2', name: 'Tiago Silva', password: 'senhaforte', login: 'tiago.silva', vencimento: '2026-03-15' },
+            ];
+            localStorage.setItem('yoshiPromptsUsers', JSON.stringify(defaultUsers));
+        }
+    </script>
+</body>
+</html>
