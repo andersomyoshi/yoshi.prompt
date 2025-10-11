@@ -10,7 +10,6 @@
         body {
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #8bc6f2, #a18dce);
-            background-image: url('https://placehold.co/800x1200/9ad2f5/9ad2f5?text=BG'); /* Placeholder for background */
             background-size: cover;
             background-position: center;
         }
@@ -30,7 +29,7 @@
         <header class="mb-8">
             <img src="logo.png" alt="Logo Yoshi Prompts" class="mx-auto mb-4 rounded-full shadow-lg" style="width: 150px; height: 150px;">
             <h1 class="text-5xl font-black text-white title-text">YOSHI PROMPTS</h1>
-            <p class="text-xl text-white/90 font-light title-text">PROMPTS PRONTO SÓ COPIE E COLE.</p>
+            <p class="text-xl text-white/90 font-light title-text">PROMPTS PRONTOS, SÓ COPIE E COLE.</p>
         </header>
 
         <main>
@@ -43,7 +42,7 @@
                 <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-full shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out">
                     Login
                 </button>
-                <a href="#" class="text-sm text-white/70 hover:text-white transition-colors">Forgot Password?</a>
+                <a href="#" class="text-sm text-white/70 hover:text-white transition-colors">Esqueceu a senha?</a>
             </form>
         </main>
     </div>
@@ -59,32 +58,45 @@
             const password = document.getElementById('password').value;
             const errorMessage = document.getElementById('error-message');
 
-            // Credenciais de Administrador (sempre disponíveis)
             const admin = { login: 'admin', password: 'admin123' };
-            
-            // Carrega usuários do localStorage
             const allUsers = JSON.parse(localStorage.getItem('yoshiPromptsUsers')) || [];
 
-            // Verifica se é o administrador
+            // Limpa avisos de login anterior
+            localStorage.removeItem('expirationWarningDays');
+
             if (username === admin.login && password === admin.password) {
                 localStorage.setItem('username', 'Administrador');
+                localStorage.setItem('userId', 'admin_user');
                 window.location.href = './admin.html';
                 return;
             }
             
-            // Verifica se é um usuário comum
             const user = allUsers.find(u => u.login === username && u.password === password);
             
             if (user) {
-                 // Lógica de data de vencimento (simples verificação)
-                const hoje = new Date().toISOString().split('T')[0];
-                if (user.vencimento && user.vencimento < hoje) {
-                    errorMessage.textContent = 'Seu acesso expirou. Contate o suporte.';
-                    errorMessage.classList.remove('hidden');
-                    return;
+                const hoje = new Date();
+                hoje.setHours(0, 0, 0, 0); // Zera o tempo para comparar apenas a data
+
+                if (user.vencimento) {
+                    const vencimento = new Date(user.vencimento + 'T00:00:00'); // Garante que a data é lida corretamente
+                    
+                    if (vencimento < hoje) {
+                        errorMessage.textContent = 'Seu acesso expirou. Contate o suporte.';
+                        errorMessage.classList.remove('hidden');
+                        return;
+                    }
+
+                    // NOVO: Lógica de contagem regressiva
+                    const diffTime = vencimento - hoje;
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                    if (diffDays >= 0 && diffDays <= 5) {
+                        localStorage.setItem('expirationWarningDays', diffDays);
+                    }
                 }
                 
                 localStorage.setItem('username', user.name);
+                localStorage.setItem('userId', user.id);
                 window.location.href = './user.html';
             } else {
                 errorMessage.textContent = 'Login ou senha inválidos.';
@@ -92,15 +104,13 @@
             }
         }
 
-        // Inicializa os usuários no localStorage se não existirem
         if (!localStorage.getItem('yoshiPromptsUsers')) {
             const defaultUsers = [
-                { id: '0001', name: 'Talita Gomes Silva', password: 'A123456Y', login: 'talita', vencimento: '2025-12-31', history: 'Copiou texto do prompt CODIGO: 00001.' },
-                { id: '0002', name: 'Tiago Silva', password: 'senha forte', login: 'tiago.silva', vencimento: '2026-03-15', history: 'Login em 09/10/2025.' },
+                { id: 'user1', name: 'Talita Gomes Silva', password: 'A123456Y', login: 'talita', vencimento: '2025-10-15' }, // Vencimento em 4 dias a partir de 11/10/2025
+                { id: 'user2', name: 'Tiago Silva', password: 'senhaforte', login: 'tiago.silva', vencimento: '2026-03-15' },
             ];
             localStorage.setItem('yoshiPromptsUsers', JSON.stringify(defaultUsers));
         }
     </script>
 </body>
 </html>
-
