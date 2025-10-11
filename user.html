@@ -7,36 +7,60 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* ... Seus estilos CSS permanecem os mesmos ... */
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #8bc6f2, #a18dce); }
+        .main-container { max-width: 500px; margin: 0 auto; }
+        .prompt-card { background-color: rgba(255, 255, 255, 0.3); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .code-box { background-color: rgba(0, 0, 0, 0.7); color: #f1f1f1; font-family: 'Courier New', Courier, monospace; }
+        #image-modal { transition: opacity 0.3s ease-in-out; }
+        .filter-select { -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%2... (código SVG para a seta)'); background-repeat: no-repeat; background-position: right .7rem top 50%; background-size: .65rem auto; }
     </style>
 </head>
 <body class="text-gray-800">
+    <div id="notification-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl text-center"><p id="notification-message"></p></div>
+    </div>
+    <div id="image-modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 invisible opacity-0 z-40" onclick="hideFullscreenImage()">
+        <img id="fullscreen-image" src="" alt="Visualização em tela cheia" class="max-w-full max-h-full object-contain">
+    </div>
+    
     <div class="main-container min-h-screen p-4">
+        <header class="flex justify-between items-start mb-4 text-white">
+            <div>
+                <h1 id="welcome-message" class="text-4xl font-bold">Bem Vindo.</h1>
+                <p id="user-name" class="text-2xl"></p>
+            </div>
+            <button onclick="handleLogout()" class="text-4xl transform hover:scale-110 transition-transform duration-200">&laquo;</button>
+        </header>
+
+        <div id="expiration-warning" class="hidden bg-red-500 text-white text-center p-3 rounded-lg mb-4 shadow-lg"></div>
+
+        <div class="flex flex-col sm:flex-row justify-around items-center my-6 gap-2">
+            <button onclick="applyFilters(true)" class="w-full sm:w-auto flex-1 py-2 px-4 bg-lime-300 rounded-full shadow-md hover:bg-lime-400 font-semibold">TODOS</button>
+            <div class="relative w-full sm:w-auto flex-1"><select id="ia-filter" onchange="applyFilters()" class="filter-select w-full py-2 px-4 bg-lime-300 rounded-full shadow-md hover:bg-lime-400 font-semibold text-center"><option value="">IA</option></select></div>
+            <div class="relative w-full sm:w-auto flex-1"><select id="category-filter" onchange="applyFilters()" class="filter-select w-full py-2 px-4 bg-lime-300 rounded-full shadow-md hover:bg-lime-400 font-semibold text-center"><option value="">CATEGORIA</option></select></div>
         </div>
 
+        <main id="prompts-container" class="space-y-6">
+            <p class="text-center text-white text-lg">Carregando prompts...</p>
+        </main>
+        
+        <footer class="text-center mt-8 text-white/70 text-sm">By: A.Yoshi</footer>
+    </div>
+
+    <!-- Scripts do Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
     <script>
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+        const firebaseConfig = {
+          apiKey: "AIzaSyAg37Z0ahi-a_jNt_X89UUY1oj7RiNuMFs",
+          authDomain: "yoshi-prompts-app.firebaseapp.com",
+          projectId: "yoshi-prompts-app",
+          storageBucket: "yoshi-prompts-app.appspot.com",
+          messagingSenderId: "509816669209",
+          appId: "1:509816669209:web:695a6c4bd2d18014371688"
+        };
 
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyAg37Z0ahi-a_jNt_X89UUY1oj7RiNuMFs",
-  authDomain: "yoshi-prompts-app.firebaseapp.com",
-  projectId: "yoshi-prompts-app",
-  storageBucket: "yoshi-prompts-app.firebasestorage.app",
-  messagingSenderId: "509816669209",
-  appId: "1:509816669209:web:695a6c4bd2d18014371688"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-
-        // Inicializa o Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
@@ -56,45 +80,123 @@ const app = initializeApp(firebaseConfig);
             document.getElementById('user-name').textContent = currentUsername.toUpperCase();
             await logActivity('Login');
 
-            // Carrega prompts do Firebase
             try {
-                const snapshot = await db.collection('prompts').get();
+                const snapshot = await db.collection('prompts').orderBy('createdAt', 'desc').get();
                 allPrompts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
                 displayExpirationWarning();
                 populateFilters();
-                applyFilters(true); // Renderiza todos os prompts
+                applyFilters(true);
             } catch (error) {
                 console.error("Erro ao carregar prompts:", error);
                 document.getElementById('prompts-container').innerHTML = `<div class="text-center text-white bg-black/20 p-4 rounded-lg">Erro ao carregar prompts.</div>`;
             }
         });
 
+        function displayExpirationWarning() {
+            const daysLeft = sessionStorage.getItem('expirationWarningDays');
+            if (daysLeft !== null) {
+                const warningDiv = document.getElementById('expiration-warning');
+                let message = parseInt(daysLeft) === 0 ? 'Seu acesso expira HOJE!' :
+                              parseInt(daysLeft) === 1 ? 'Seu acesso expira em 1 dia!' :
+                              `Seu acesso expira em ${daysLeft} dias!`;
+                warningDiv.textContent = message + ' Contate o administrador para renovação.';
+                warningDiv.classList.remove('hidden');
+            }
+        }
+
         async function logActivity(action, details = null) {
-            const newLog = {
-                userId: currentUserId,
-                userName: currentUsername,
-                action,
-                details,
-                timestamp: new Date() // Firestore lida com o tipo de data
-            };
+            const newLog = { userId: currentUserId, userName: currentUsername, action, details, timestamp: new Date() };
             try {
                 await db.collection('activityLog').add(newLog);
             } catch (error) {
                 console.error("Erro ao registrar atividade:", error);
             }
         }
-        
+
         function handleLogout() {
             logActivity('Logout');
             setTimeout(() => {
-                sessionStorage.clear(); // Limpa a sessão
+                sessionStorage.clear();
                 window.location.href = 'index.html'; 
             }, 200);
         }
+
+        function populateFilters() {
+            const iaFilter = document.getElementById('ia-filter');
+            const categoryFilter = document.getElementById('category-filter');
+            const uniqueIas = [...new Set(allPrompts.map(p => p.marca_ia).filter(Boolean))];
+            const uniqueCategories = [...new Set(allPrompts.map(p => p.category).filter(Boolean))];
+            uniqueIas.forEach(ia => iaFilter.add(new Option(ia, ia)));
+            uniqueCategories.forEach(cat => categoryFilter.add(new Option(cat, cat)));
+        }
         
-        // ... O resto do seu script (funções de filtro, renderização, etc.) pode permanecer o mesmo ...
-        // Ele já está preparado para trabalhar com a variável global 'allPrompts', que agora é preenchida pelo Firebase.
+        function applyFilters(showAll = false) {
+            if (showAll) {
+                document.getElementById('ia-filter').value = '';
+                document.getElementById('category-filter').value = '';
+                renderPrompts(allPrompts);
+                return;
+            }
+            let filtered = allPrompts.filter(p => 
+                (document.getElementById('ia-filter').value ? p.marca_ia === document.getElementById('ia-filter').value : true) &&
+                (document.getElementById('category-filter').value ? p.category === document.getElementById('category-filter').value : true)
+            );
+            renderPrompts(filtered);
+        }
+
+        function renderPrompts(promptsToRender) {
+            const container = document.getElementById('prompts-container');
+            container.innerHTML = '';
+            if (promptsToRender.length === 0) {
+                container.innerHTML = `<div class="text-center text-white bg-black/20 p-4 rounded-lg">Nenhum prompt encontrado.</div>`;
+                return;
+            }
+            promptsToRender.forEach(prompt => {
+                const escapedDesc = prompt.description.replace(/'/g, "\\'");
+                container.innerHTML += `
+                <div class="prompt-card rounded-2xl p-3 shadow-lg">
+                    <div class="flex justify-between items-center text-white mb-2 px-1">
+                        <h2 class="font-bold">${prompt.description}</h2>
+                        <div class="flex flex-col items-end text-xs">
+                           <span class="font-semibold bg-blue-800/50 px-2 py-1 rounded-full mb-1">IA: ${prompt.marca_ia}</span>
+                           <span class="font-semibold bg-black/20 px-2 py-1 rounded-full">Cat: ${prompt.category}</span>
+                        </div>
+                    </div>
+                    <img src="${prompt.image || 'https://placehold.co/600x400/EEE/333?text=Sem+Imagem'}" alt="${escapedDesc}" class="rounded-lg w-full h-auto object-cover mb-3 cursor-pointer" onclick="showFullscreenImage(this.src)">
+                    <div id="prompt-${prompt.id}" class="code-box p-3 rounded-lg text-sm overflow-x-auto">${prompt.text.replace(/\n/g, '<br>')}</div>
+                    <div class="flex justify-between items-center mt-3">
+                        <button onclick="copyToClipboard('prompt-${prompt.id}', '${escapedDesc}')" class="bg-gray-600 hover:bg-gray-700 text-white text-xs font-bold py-2 px-4 rounded-lg">copiar texto</button>
+                        <a href="${prompt.link || '#'}" target="_blank" class="bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-2 px-4 rounded-lg no-underline">Acessar IA</a>
+                    </div>
+                </div>`;
+            });
+        }
+        
+        function copyToClipboard(elementId, promptDescription) {
+            const textToCopy = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                logActivity('Copiou Prompt', { promptDescription });
+                showNotification('Texto copiado!');
+            });
+        }
+
+        function showNotification(message) {
+            const modal = document.getElementById('notification-modal');
+            modal.querySelector('p').textContent = message;
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.add('hidden'), 2000);
+        }
+
+        function showFullscreenImage(src) {
+            if (src && !src.includes('placehold.co')) {
+                document.getElementById('fullscreen-image').src = src;
+                document.getElementById('image-modal').classList.remove('invisible', 'opacity-0');
+            }
+        }
+        function hideFullscreenImage() {
+            document.getElementById('image-modal').classList.add('invisible', 'opacity-0');
+        }
     </script>
 </body>
 </html>
