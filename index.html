@@ -7,20 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #8bc6f2, #a18dce);
-            background-size: cover;
-            background-position: center;
-        }
-        .login-container {
-            background-color: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .title-text {
-            text-shadow: 2px 2px 8px rgba(0,0,0,0.4);
-        }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #8bc6f2, #a18dce); background-size: cover; background-position: center; }
+        .login-container { background-color: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .title-text { text-shadow: 2px 2px 8px rgba(0,0,0,0.4); }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
@@ -34,82 +23,110 @@
 
         <main>
             <form id="login-form" class="login-container p-8 rounded-2xl shadow-2xl space-y-6">
-                <input type="text" id="username" placeholder="Username" class="w-full px-4 py-3 bg-white/80 rounded-full border-2 border-transparent focus:outline-none focus:border-cyan-400 transition-all text-gray-800 placeholder-gray-500">
-                <input type="password" id="password" placeholder="Password" class="w-full px-4 py-3 bg-white/80 rounded-full border-2 border-transparent focus:outline-none focus:border-cyan-400 transition-all text-gray-800 placeholder-gray-500">
-                
+                <input type="text" id="username" placeholder="Username" class="w-full px-4 py-3 bg-white/80 rounded-full border-2 border-transparent focus:outline-none focus:border-cyan-400">
+                <input type="password" id="password" placeholder="Password" class="w-full px-4 py-3 bg-white/80 rounded-full border-2 border-transparent focus:outline-none focus:border-cyan-400">
                 <p id="error-message" class="text-red-300 text-sm font-semibold hidden h-4"></p>
-
-                <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-full shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out">
-                    Login
-                </button>
-                <a href="#" class="text-sm text-white/70 hover:text-white transition-colors">Esqueceu a senha?</a>
+                <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-full shadow-lg transform hover:scale-105 transition-all">Login</button>
             </form>
         </main>
     </div>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
     <script>
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAg37Z0ahi-a_jNt_X89UUY1oj7RiNuMFs",
+  authDomain: "yoshi-prompts-app.firebaseapp.com",
+  projectId: "yoshi-prompts-app",
+  storageBucket: "yoshi-prompts-app.firebasestorage.app",
+  messagingSenderId: "509816669209",
+  appId: "1:509816669209:web:695a6c4bd2d18014371688"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+        const db = firebase.firestore();
+
         document.getElementById('login-form').addEventListener('submit', function(event) {
             event.preventDefault();
             handleLogin();
         });
 
-        function handleLogin() {
+        async function handleLogin() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const errorMessage = document.getElementById('error-message');
+            errorMessage.classList.add('hidden'); // Esconde a mensagem de erro a cada tentativa
 
+            // Credenciais de Admin (Hardcoded)
             const admin = { login: 'admin', password: 'admin123' };
-            const allUsers = JSON.parse(localStorage.getItem('yoshiPromptsUsers')) || [];
-
-            // Limpa avisos de login anterior
-            localStorage.removeItem('expirationWarningDays');
-
             if (username === admin.login && password === admin.password) {
-                localStorage.setItem('username', 'Administrador');
-                localStorage.setItem('userId', 'admin_user');
+                sessionStorage.setItem('username', 'Administrador');
+                sessionStorage.setItem('userId', 'admin_user');
                 window.location.href = './admin.html';
                 return;
             }
-            
-            const user = allUsers.find(u => u.login === username && u.password === password);
-            
-            if (user) {
-                const hoje = new Date();
-                hoje.setHours(0, 0, 0, 0); // Zera o tempo para comparar apenas a data
 
-                if (user.vencimento) {
-                    const vencimento = new Date(user.vencimento + 'T00:00:00'); // Garante que a data é lida corretamente
-                    
-                    if (vencimento < hoje) {
-                        errorMessage.textContent = 'Seu acesso expirou. Contate o suporte.';
-                        errorMessage.classList.remove('hidden');
-                        return;
-                    }
+            // Busca o usuário no banco de dados Firestore
+            try {
+                const usersRef = db.collection('users');
+                const snapshot = await usersRef.where('login', '==', username).get();
 
-                    // NOVO: Lógica de contagem regressiva
-                    const diffTime = vencimento - hoje;
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                    if (diffDays >= 0 && diffDays <= 5) {
-                        localStorage.setItem('expirationWarningDays', diffDays);
-                    }
+                if (snapshot.empty) {
+                    errorMessage.textContent = 'Login ou senha inválidos.';
+                    errorMessage.classList.remove('hidden');
+                    return;
                 }
-                
-                localStorage.setItem('username', user.name);
-                localStorage.setItem('userId', user.id);
-                window.location.href = './user.html';
-            } else {
-                errorMessage.textContent = 'Login ou senha inválidos.';
+
+                let userFound = false;
+                snapshot.forEach(doc => {
+                    const user = doc.data();
+                    if (user.password === password) {
+                        userFound = true;
+                        // Lógica de Vencimento
+                        const hoje = new Date();
+                        hoje.setHours(0, 0, 0, 0);
+                        const vencimento = new Date(user.vencimento + 'T00:00:00');
+                        
+                        if (vencimento < hoje) {
+                            errorMessage.textContent = 'Seu acesso expirou. Contate o suporte.';
+                            errorMessage.classList.remove('hidden');
+                            return;
+                        }
+
+                        const diffTime = vencimento - hoje;
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        
+                        sessionStorage.removeItem('expirationWarningDays'); // Limpa aviso anterior
+                        if (diffDays >= 0 && diffDays <= 5) {
+                            sessionStorage.setItem('expirationWarningDays', diffDays);
+                        }
+                        
+                        // Salva na sessionStorage para a sessão atual
+                        sessionStorage.setItem('username', user.name);
+                        sessionStorage.setItem('userId', doc.id); // doc.id é o ID único do Firestore
+                        window.location.href = './user.html';
+                    }
+                });
+
+                if (!userFound) {
+                    errorMessage.textContent = 'Login ou senha inválidos.';
+                    errorMessage.classList.remove('hidden');
+                }
+
+            } catch (error) {
+                console.error("Erro ao fazer login: ", error);
+                errorMessage.textContent = 'Erro de conexão. Tente novamente.';
                 errorMessage.classList.remove('hidden');
             }
-        }
-
-        if (!localStorage.getItem('yoshiPromptsUsers')) {
-            const defaultUsers = [
-                { id: 'user1', name: 'Talita Gomes Silva', password: 'A123456Y', login: 'talita', vencimento: '2025-10-15' }, // Vencimento em 4 dias a partir de 11/10/2025
-                { id: 'user2', name: 'Tiago Silva', password: 'senhaforte', login: 'tiago.silva', vencimento: '2026-03-15' },
-            ];
-            localStorage.setItem('yoshiPromptsUsers', JSON.stringify(defaultUsers));
         }
     </script>
 </body>
