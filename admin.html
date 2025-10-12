@@ -38,7 +38,7 @@
                 </div>
             </div>
             <div id="cadastrar-page" class="page-content rounded-2xl p-4 hidden"><div class="flex justify-around items-center mb-4 text-xs space-x-2"><button onclick="newUser()" data-userview="novo" class="btn-sub flex-1 py-2 px-2 rounded-full shadow hover:bg-lime-500">NOVO</button><button onclick="showUserView('pesquisar')" data-userview="pesquisar" class="btn-sub flex-1 py-2 px-2 rounded-full shadow hover:bg-gray-500">PESQUISAR</button><button onclick="deleteCurrentUser()" class="btn-sub flex-1 py-2 px-2 bg-red-500 text-white rounded-full shadow hover:bg-red-600">EXCLUIR</button></div><div id="user-form-view"><div class="space-y-3 text-sm"><input id="user-vencimento" type="date" class="w-full p-2 rounded-lg"><div id="user-vencimento-label" class="w-full p-2 rounded-lg bg-cyan-800 text-white text-center"></div><input id="user-id" type="text" placeholder="ID (automático)" class="w-full p-2 rounded-lg" disabled><input id="user-name" type="text" placeholder="Nome" class="w-full p-2 rounded-lg"><input id="user-password" type="text" placeholder="Senha" class="w-full p-2 rounded-lg"><div class="flex space-x-2"><input id="user-login" type="text" placeholder="Login" class="flex-grow p-2 rounded-lg"><button class="bg-green-500 hover:bg-green-600 text-white font-bold p-2 rounded-lg" onclick="saveCurrentUser()">Salvar</button></div></div><div class="mt-4"><h3 class="text-center font-bold text-white bg-black/20 rounded-full py-1 my-2">HISTÓRICO DO USUÁRIO</h3><div id="user-history-log" class="history-box bg-white/80 p-2 rounded-lg h-32 overflow-y-auto text-sm space-y-1"></div></div></div><div id="user-pesquisar-view" class="hidden"><input type="text" id="user-search-input" onkeyup="renderUsers()" placeholder="Pesquisar..." class="w-full p-2 rounded-lg mb-2"><div id="user-list" class="history-box bg-white/80 p-2 rounded-lg h-[25rem] overflow-y-auto text-sm space-y-2"></div></div></div>
-            <div id="adc-prompts-page" class="page-content rounded-2xl p-4"><div class="flex justify-around items-center mb-4 text-xs space-x-2"><button onclick="newPrompt()" data-view="novo" class="btn-sub-prompt flex-1 py-2 px-2 rounded-full shadow hover:bg-lime-500">NOVO</button><button onclick="showPromptView('pesquisar')" data-view="pesquisar" class="btn-sub-prompt flex-1 py-2 px-2 rounded-full shadow hover:bg-gray-500">PESQUISAR</button><button onclick="deleteCurrentPrompt()" class="flex-1 py-2 px-2 bg-red-500 text-white rounded-full shadow hover:bg-red-600">EXCLUIR</button></div><div id="prompt-novo-view"><div class="space-y-3 text-sm"><div class="my-2 h-32 bg-white/30 rounded-lg flex items-center justify-center overflow-hidden border-2 border-dashed border-white/40"><img id="prompt-image-preview" src="" class="hidden h-full w-full object-contain" data-original-url=""><span id="image-placeholder" class="text-white/80">Imagem</span></div><input type="file" id="prompt-image-input" class="hidden" accept="image/*"><button onclick="document.getElementById('prompt-image-input').click()" class="w-full p-2 rounded-lg bg-blue-500 text-white font-semibold hover:bg-blue-600">Selecionar Imagem</button><input type="text" id="prompt-id" placeholder="ID (automático)" class="w-full p-2 rounded-lg" disabled><input type="text" id="prompt-marca-ia" placeholder="Marca IA (ex: Gemini)" class="w-full p-2 rounded-lg"><input type="text" id="prompt-category" placeholder="Categoria (ex: Divertido)" class="w-full p-2 rounded-lg"><input type="text" id="prompt-description" placeholder="Descrição" class="w-full p-2 rounded-lg"><input type="text" id="prompt-link" placeholder="Link da IA" class="w-full p-2 rounded-lg"><textarea id="prompt-text" placeholder="Texto do prompt..." class="w-full p-2 rounded-lg h-24 resize-none"></textarea><button id="save-prompt-button" class="w-full p-2 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600" onclick="saveCurrentPrompt()">SALVAR</button></div></div><div id="prompt-pesquisar-view" class="hidden"><input type="text" id="prompt-search-input" onkeyup="renderPrompts()" placeholder="Pesquisar..." class="w-full p-2 rounded-lg"><div id="prompt-list" class="history-box bg-white/80 p-2 rounded-lg h-[25.5rem] overflow-y-auto text-sm space-y-2"></div></div></div>
+            <div id="adc-prompts-page" class="page-content rounded-2xl p-4"><div class="flex justify-around items-center mb-4 text-xs space-x-2"><button onclick="newPrompt()" data-view="novo" class="btn-sub-prompt flex-1 py-2 px-2 rounded-full shadow hover:bg-lime-500">NOVO</button><button onclick="showPromptView('pesquisar')" data-view="pesquisar" class="btn-sub-prompt flex-1 py-2 px-2 rounded-full shadow hover:bg-gray-500">PESQUISAR</button><button onclick="deleteCurrentPrompt()" class="flex-1 py-2 px-2 bg-red-500 text-white rounded-full shadow hover:bg-red-600">EXCLUIR</button></div><div id="prompt-novo-view"><div class="space-y-3 text-sm"><div class="my-2 h-32 bg-white/30 rounded-lg flex items-center justify-center overflow-hidden border-2 border-dashed border-white/40"><img id="prompt-image-preview" src="" class="hidden h-full w-full object-contain"><span id="image-placeholder" class="text-white/80">Visualização da Imagem</span></div><!-- NOVO: Campo de URL da imagem --><input type="text" id="prompt-image-url" oninput="updateImagePreviewFromURL()" placeholder="Cole a URL da imagem aqui" class="w-full p-2 rounded-lg"><input type="text" id="prompt-id" placeholder="ID (automático)" class="w-full p-2 rounded-lg" disabled><input type="text" id="prompt-marca-ia" placeholder="Marca IA (ex: Gemini)" class="w-full p-2 rounded-lg"><input type="text" id="prompt-category" placeholder="Categoria (ex: Divertido)" class="w-full p-2 rounded-lg"><input type="text" id="prompt-description" placeholder="Descrição" class="w-full p-2 rounded-lg"><input type="text" id="prompt-link" placeholder="Link da IA" class="w-full p-2 rounded-lg"><textarea id="prompt-text" placeholder="Texto do prompt..." class="w-full p-2 rounded-lg h-24 resize-none"></textarea><button id="save-prompt-button" class="w-full p-2 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600" onclick="saveCurrentPrompt()">SALVAR</button></div></div><div id="prompt-pesquisar-view" class="hidden"><input type="text" id="prompt-search-input" onkeyup="renderPrompts()" placeholder="Pesquisar..." class="w-full p-2 rounded-lg"><div id="prompt-list" class="history-box bg-white/80 p-2 rounded-lg h-[25.5rem] overflow-y-auto text-sm space-y-2"></div></div></div>
         </main>
         <footer class="text-center mt-6 text-white/70 text-sm">By: A.Yoshi</footer>
     </div>
@@ -46,7 +46,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+    <!-- REMOVIDO: O SDK do Storage não é mais necessário -->
+    <!-- <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script> -->
     <script>
         const firebaseConfig = {
           apiKey: "AIzaSyAg37Z0ahi-a_jNt_X89UUY1oj7RiNuMFs",
@@ -58,13 +59,15 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        const storage = firebase.storage();
+        // REMOVIDO: a inicialização do Storage não é mais necessária
+        // const storage = firebase.storage();
         let allUsers = [], allPrompts = [], allLogs = [], onConfirmAction = () => {};
         document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('admin-name').textContent = sessionStorage.getItem('username') || 'Admin';
             document.getElementById('confirm-yes').addEventListener('click', () => { onConfirmAction(); closeConfirm(); });
             document.getElementById('confirm-no').addEventListener('click', closeConfirm);
-            document.getElementById('prompt-image-input').addEventListener('change', handleImagePreview);
+            // REMOVIDO: o listener do input de arquivo não é mais necessário
+            // document.getElementById('prompt-image-input').addEventListener('change', handleImagePreview);
             document.getElementById('user-vencimento').addEventListener('change', updateUserVencimentoLabel);
             await loadAllData();
             showPage('adc-prompts');
@@ -93,28 +96,28 @@
             if (pageId === 'adc-prompts') { newPrompt(); renderPrompts(); }
             if (pageId === 'cadastrar') { newUser(); renderUsers(); }
         }
+        // --- FUNÇÕES DE PROMPTS (MODIFICADAS) ---
+        function updateImagePreviewFromURL() {
+            const imageUrl = document.getElementById('prompt-image-url').value.trim();
+            const preview = document.getElementById('prompt-image-preview');
+            const placeholder = document.getElementById('image-placeholder');
+            if (imageUrl) {
+                preview.src = imageUrl;
+                preview.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+            } else {
+                preview.src = '';
+                preview.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+            }
+        }
         async function saveCurrentPrompt() {
             const saveButton = document.getElementById('save-prompt-button');
             saveButton.disabled = true;
             saveButton.textContent = 'SALVANDO...';
             const promptId = document.getElementById('prompt-id').value;
-            const imageFile = document.getElementById('prompt-image-input').files[0];
-            let imageUrl = document.getElementById('prompt-image-preview').getAttribute('data-original-url');
-            if (imageFile) {
-                showNotification("Enviando imagem...");
-                const filePath = `prompt_images/${Date.now()}_${imageFile.name}`;
-                const storageRef = storage.ref(filePath);
-                try {
-                    const snapshot = await storageRef.put(imageFile);
-                    imageUrl = await snapshot.ref.getDownloadURL();
-                } catch (error) {
-                    console.error("Erro ao enviar imagem:", error);
-                    showNotification("Falha no upload da imagem.");
-                    saveButton.disabled = false;
-                    saveButton.textContent = 'SALVAR';
-                    return;
-                }
-            }
+            const imageUrl = document.getElementById('prompt-image-url').value.trim();
+            
             const promptData = { 
                 marca_ia: document.getElementById('prompt-marca-ia').value.trim(), 
                 category: document.getElementById('prompt-category').value.trim(), 
@@ -141,6 +144,7 @@
                 showNotification('Prompt salvo!');
                 await loadAllData(); 
                 renderPrompts();
+                newPrompt();
             } catch (error) { 
                 console.error("Erro ao salvar prompt:", error); 
                 showNotification("Erro ao salvar prompt."); 
@@ -149,24 +153,10 @@
                 saveButton.textContent = 'SALVAR';
             }
         }
-        function handleImagePreview(event) { 
-            const file = event.target.files[0]; 
-            if (file) { 
-                const reader = new FileReader(); 
-                reader.onload = e => { 
-                    const preview = document.getElementById('prompt-image-preview');
-                    preview.src = e.target.result; 
-                    preview.classList.remove('hidden'); 
-                    document.getElementById('image-placeholder').classList.add('hidden');
-                }; 
-                reader.readAsDataURL(file); 
-            } 
-        }
         function clearPromptForm() { 
-            ['prompt-id', 'prompt-marca-ia', 'prompt-category', 'prompt-description', 'prompt-link', 'prompt-text', 'prompt-image-input'].forEach(id => document.getElementById(id).value = ''); 
+            ['prompt-id', 'prompt-marca-ia', 'prompt-category', 'prompt-description', 'prompt-link', 'prompt-text', 'prompt-image-url'].forEach(id => document.getElementById(id).value = ''); 
             const preview = document.getElementById('prompt-image-preview');
             preview.src = ''; 
-            preview.setAttribute('data-original-url', '');
             preview.classList.add('hidden'); 
             document.getElementById('image-placeholder').classList.remove('hidden'); 
         }
@@ -179,13 +169,25 @@
             document.getElementById('prompt-link').value = prompt.link || '';
             document.getElementById('prompt-text').value = prompt.text;
             if (prompt.image) {
-                const preview = document.getElementById('prompt-image-preview');
-                preview.src = prompt.image;
-                preview.setAttribute('data-original-url', prompt.image);
-                preview.classList.remove('hidden');
-                document.getElementById('image-placeholder').classList.add('hidden');
+                document.getElementById('prompt-image-url').value = prompt.image;
+                updateImagePreviewFromURL();
             }
         }
+        async function deleteCurrentPrompt() {
+            const promptId = document.getElementById('prompt-id').value;
+            if (!promptId) { showNotification("Nenhum prompt selecionado."); return; }
+            const prompt = allPrompts.find(p => p.id === promptId);
+            showConfirm(`Excluir o prompt "${prompt.description}"?`, async () => {
+                try {
+                    await db.collection('prompts').doc(promptId).delete();
+                    showNotification(`Prompt excluído!`);
+                    await loadAllData(); 
+                    newPrompt(); 
+                    renderPrompts();
+                } catch (error) { console.error("Erro ao excluir prompt:", error); showNotification("Erro ao excluir."); }
+            });
+        }
+        // --- O RESTANTE DAS FUNÇÕES (sem alterações) ---
         function renderGlobalActivityLog() {
             const container = document.getElementById('global-history-log');
             container.innerHTML = allLogs.length === 0 ? '<p class="text-center p-4">Nenhuma atividade.</p>' : allLogs.map(log => {
@@ -237,26 +239,6 @@
             const container = document.getElementById('prompt-list');
             const filtered = allPrompts.filter(p => p.description.toLowerCase().includes(searchTerm) || p.category.toLowerCase().includes(searchTerm));
             container.innerHTML = filtered.length === 0 ? '<p class="text-center p-4">Nenhum prompt.</p>' : filtered.map(p => `<div class="p-2 bg-white/50 rounded-md cursor-pointer hover:bg-white/80" onclick="editPrompt('${p.id}')"><p class="font-semibold">${p.description}</p><p class="text-xs text-cyan-800 font-bold">${p.category.toUpperCase()}</p></div>`).join('');
-        }
-        async function deleteCurrentPrompt() {
-            const promptId = document.getElementById('prompt-id').value;
-            if (!promptId) { showNotification("Nenhum prompt selecionado."); return; }
-            const prompt = allPrompts.find(p => p.id === promptId);
-            showConfirm(`Excluir o prompt "${prompt.description}"?`, async () => {
-                try {
-                    if (prompt && prompt.image) {
-                        try {
-                            const imageRef = storage.refFromURL(prompt.image);
-                            await imageRef.delete();
-                        } catch (storageError) {
-                            console.warn("Imagem não encontrada no Storage, pode já ter sido removida:", storageError);
-                        }
-                    }
-                    await db.collection('prompts').doc(promptId).delete();
-                    showNotification(`Prompt excluído!`);
-                    await loadAllData(); newPrompt(); renderPrompts();
-                } catch (error) { console.error("Erro ao excluir prompt:", error); showNotification("Erro ao excluir."); }
-            });
         }
         function showNotification(message) { const el = document.getElementById('notification-modal'); el.querySelector('p').textContent = message; el.classList.remove('hidden'); setTimeout(() => el.classList.add('hidden'), 3500); }
         function showConfirm(message, callback) { const el = document.getElementById('confirm-modal'); el.querySelector('p').textContent = message; onConfirmAction = callback || (() => {}); el.classList.remove('hidden'); }
