@@ -42,11 +42,10 @@
                 <input type="text" id="prompt-image-url" oninput="updateImagePreviewFromURL()" placeholder="Ex: https://lh3.googleusercontent.com/d/..." class="w-full p-2 rounded-lg">
                 <input type="text" id="prompt-id" placeholder="ID (automático)" class="w-full p-2 rounded-lg" disabled>
                 <input type="text" id="prompt-marca-ia" oninput="handleIaBrandChange()" placeholder="Marca IA (ex: Gemini)" class="w-full p-2 rounded-lg">
-                <input type="text" id="prompt-category" placeholder="Categoria (ex: Divertido)" class="w-full p-2 rounded-lg">
-                <!-- MODIFICADO: Adicionado 'list' e 'oninput' para o autocompletar -->
-                <input type="text" id="prompt-description" placeholder="Descrição" class="w-full p-2 rounded-lg" list="description-suggestions" oninput="handleDescriptionChange()">
-                <!-- NOVO: Datalist para as sugestões -->
-                <datalist id="description-suggestions"></datalist>
+                <input type="text" id="prompt-category" placeholder="Categoria (ex: Divertido)" class="w-full p-2 rounded-lg" list="category-suggestions">
+                <!-- REMOVIDO: Atributos de autocompletar da descrição -->
+                <input type="text" id="prompt-description" placeholder="Descrição" class="w-full p-2 rounded-lg">
+                <datalist id="category-suggestions"></datalist>
                 <input type="text" id="prompt-link" placeholder="Link da IA (automático)" class="w-full p-2 rounded-lg">
                 <textarea id="prompt-text" placeholder="Texto do prompt..." class="w-full p-2 rounded-lg h-24 resize-none"></textarea><button id="save-prompt-button" class="w-full p-2 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600" onclick="saveCurrentPrompt()">SALVAR</button></div></div><div id="prompt-pesquisar-view" class="hidden"><input type="text" id="prompt-search-input" onkeyup="renderPrompts()" placeholder="Pesquisar..." class="w-full p-2 rounded-lg"><div id="prompt-list" class="history-box bg-white/80 p-2 rounded-lg h-[25.5rem] overflow-y-auto text-sm space-y-2"></div></div></div>
         </main>
@@ -86,7 +85,7 @@
                 allUsers = usersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 allPrompts = promptsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 allLogs = logsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                populateDescriptionSuggestions(); // Popula as sugestões após carregar os dados
+                populateCategorySuggestions();
             } catch (error) { 
                 console.error("Erro ao carregar dados:", error); 
                 if (error.code === 'permission-denied') { showNotification("Erro de Permissão: Verifique as Regras de Segurança do Firestore."); } 
@@ -177,7 +176,6 @@
                 } catch (error) { console.error("Erro ao excluir:", error); showNotification("Erro ao excluir."); }
             });
         }
-        // --- FUNÇÕES DE PROMPTS (COM AUTOCOMPLETAR) ---
         function showPromptView(viewName) {
             const novoView = document.getElementById('prompt-novo-view');
             const pesquisarView = document.getElementById('prompt-pesquisar-view');
@@ -231,23 +229,15 @@
                 placeholder.classList.remove('hidden');
             }
         }
-        function populateDescriptionSuggestions() {
-            const datalist = document.getElementById('description-suggestions');
-            datalist.innerHTML = ''; // Limpa sugestões antigas
-            const descriptions = [...new Set(allPrompts.map(p => p.description))];
-            descriptions.forEach(desc => {
+        function populateCategorySuggestions() {
+            const datalist = document.getElementById('category-suggestions');
+            datalist.innerHTML = '';
+            const categories = [...new Set(allPrompts.map(p => p.category))];
+            categories.forEach(cat => {
                 const option = document.createElement('option');
-                option.value = desc;
+                option.value = cat;
                 datalist.appendChild(option);
             });
-        }
-        function handleDescriptionChange() {
-            const descriptionInput = document.getElementById('prompt-description');
-            const selectedDescription = descriptionInput.value;
-            const existingPrompt = allPrompts.find(p => p.description === selectedDescription);
-            if (existingPrompt) {
-                populatePromptForm(existingPrompt);
-            }
         }
         async function saveCurrentPrompt() {
             const saveButton = document.getElementById('save-prompt-button');
