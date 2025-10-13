@@ -13,6 +13,7 @@
         .btn-sub.active, .btn-sub-prompt.active { background-color: #16a34a; color: white; }
         .page-content { background-color: rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px); }
         .history-box::-webkit-scrollbar { width: 5px; } .history-box::-webkit-scrollbar-track { background: transparent; } .history-box::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.3); border-radius: 10px; }
+        .filter-select { -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right .7rem top 50%; background-size: .65rem auto; }
     </style>
 </head>
 <body class="text-gray-800">
@@ -30,11 +31,19 @@
         <main class="flex-grow">
             <div id="monitorar-page" class="page-content rounded-2xl p-4 hidden">
                 <h2 class="text-center font-bold text-white bg-black/20 rounded-full py-2 mb-4">HISTÓRICO GERAL</h2>
-                <div id="global-history-log" class="history-box bg-white/80 p-4 rounded-lg h-96 overflow-y-auto text-sm space-y-2"><p>Carregando...</p></div>
+                <!-- NOVO: Filtro por Mês -->
+                <div class="relative mb-4">
+                    <select id="month-filter" onchange="renderGlobalActivityLog()" class="filter-select w-full p-2 rounded-lg bg-white/80 font-semibold text-center">
+                        <option value="">Todos os Meses</option>
+                    </select>
+                </div>
+                <div id="global-history-log" class="history-box bg-white/80 p-4 rounded-lg h-80 overflow-y-auto text-sm space-y-2"><p>Carregando...</p></div>
                 <div class="mt-6 flex flex-wrap justify-center gap-4">
-                    <button class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg" onclick="saveAsPDF()">Salvar em PDF</button>
+                    <button class="bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-lg" onclick="saveAsPDF()">Salvar em PDF</button>
                     <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg" onclick="backupData()">Fazer Backup (JSON)</button>
                     <button class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg" onclick="triggerRestore()">Restaurar Backup</button>
+                    <!-- NOVO: Botão Limpar Histórico -->
+                    <button class="bg-black hover:bg-gray-800 text-white font-bold py-2 px-4 rounded-lg" onclick="showConfirm('Deseja realmente limpar TODO o histórico de atividades? Esta ação não pode ser desfeita.', clearAllHistory)">Limpar Histórico</button>
                 </div>
             </div>
             <div id="cadastrar-page" class="page-content rounded-2xl p-4 hidden"><div class="flex justify-around items-center mb-4 text-xs space-x-2"><button onclick="newUser()" data-userview="novo" class="btn-sub flex-1 py-2 px-2 rounded-full shadow hover:bg-lime-500">NOVO</button><button onclick="showUserView('pesquisar')" data-userview="pesquisar" class="btn-sub flex-1 py-2 px-2 rounded-full shadow hover:bg-gray-500">PESQUISAR</button><button onclick="deleteCurrentUser()" class="btn-sub flex-1 py-2 px-2 bg-red-500 text-white rounded-full shadow hover:bg-red-600">EXCLUIR</button></div><div id="user-form-view"><div class="space-y-3 text-sm"><input id="user-vencimento" type="date" class="w-full p-2 rounded-lg"><div id="user-vencimento-label" class="w-full p-2 rounded-lg bg-cyan-800 text-white text-center"></div><input id="user-id" type="text" placeholder="ID (automático)" class="w-full p-2 rounded-lg" disabled><input id="user-name" type="text" placeholder="Nome" class="w-full p-2 rounded-lg"><input id="user-password" type="text" placeholder="Senha" class="w-full p-2 rounded-lg"><div class="flex space-x-2"><input id="user-login" type="text" placeholder="Login" class="flex-grow p-2 rounded-lg"><button class="bg-green-500 hover:bg-green-600 text-white font-bold p-2 rounded-lg" onclick="saveCurrentUser()">Salvar</button></div></div><div class="mt-4"><h3 class="text-center font-bold text-white bg-black/20 rounded-full py-1 my-2">HISTÓRICO DO USUÁRIO</h3><div id="user-history-log" class="history-box bg-white/80 p-2 rounded-lg h-32 overflow-y-auto text-sm space-y-1"></div></div></div><div id="user-pesquisar-view" class="hidden"><input type="text" id="user-search-input" onkeyup="renderUsers()" placeholder="Pesquisar..." class="w-full p-2 rounded-lg mb-2"><div id="user-list" class="history-box bg-white/80 p-2 rounded-lg h-[25rem] overflow-y-auto text-sm space-y-2"></div></div></div>
@@ -43,11 +52,16 @@
                 <input type="text" id="prompt-id" placeholder="ID (automático)" class="w-full p-2 rounded-lg" disabled>
                 <input type="text" id="prompt-marca-ia" oninput="handleIaBrandChange()" placeholder="Marca IA (ex: Gemini)" class="w-full p-2 rounded-lg">
                 <input type="text" id="prompt-category" placeholder="Categoria (ex: Divertido)" class="w-full p-2 rounded-lg" list="category-suggestions">
-                <!-- REMOVIDO: Atributos de autocompletar da descrição -->
                 <input type="text" id="prompt-description" placeholder="Descrição" class="w-full p-2 rounded-lg">
                 <datalist id="category-suggestions"></datalist>
                 <input type="text" id="prompt-link" placeholder="Link da IA (automático)" class="w-full p-2 rounded-lg">
-                <textarea id="prompt-text" placeholder="Texto do prompt..." class="w-full p-2 rounded-lg h-24 resize-none"></textarea><button id="save-prompt-button" class="w-full p-2 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600" onclick="saveCurrentPrompt()">SALVAR</button></div></div><div id="prompt-pesquisar-view" class="hidden"><input type="text" id="prompt-search-input" onkeyup="renderPrompts()" placeholder="Pesquisar..." class="w-full p-2 rounded-lg"><div id="prompt-list" class="history-box bg-white/80 p-2 rounded-lg h-[25.5rem] overflow-y-auto text-sm space-y-2"></div></div></div>
+                <textarea id="prompt-text" placeholder="Texto do prompt..." class="w-full p-2 rounded-lg h-24 resize-none"></textarea><button id="save-prompt-button" class="w-full p-2 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600" onclick="saveCurrentPrompt()">SALVAR</button></div></div>
+                <div id="prompt-pesquisar-view" class="hidden">
+                    <input type="text" id="prompt-search-input" onkeyup="renderPrompts()" placeholder="Pesquisar..." class="w-full p-2 rounded-lg">
+                    <div id="prompt-list" class="history-box bg-white/80 p-2 rounded-lg h-[25.5rem] overflow-y-auto text-sm space-y-2"></div>
+                    <div id="prompt-total-counter" class="text-center text-white font-bold mt-4"></div>
+                </div>
+            </div>
         </main>
         <footer class="text-center mt-6 text-white/70 text-sm">By: A.Yoshi</footer>
     </div>
@@ -86,6 +100,7 @@
                 allPrompts = promptsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 allLogs = logsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 populateCategorySuggestions();
+                populateMonthFilter(); // Popula o novo filtro de mês
             } catch (error) { 
                 console.error("Erro ao carregar dados:", error); 
                 if (error.code === 'permission-denied') { showNotification("Erro de Permissão: Verifique as Regras de Segurança do Firestore."); } 
@@ -100,24 +115,73 @@
             if (pageId === 'adc-prompts') { newPrompt(); renderPrompts(); }
             if (pageId === 'cadastrar') { newUser(); renderUsers(); }
         }
+        // --- FUNÇÕES DE MONITORAMENTO (MODIFICADAS) ---
+        function populateMonthFilter() {
+            const filter = document.getElementById('month-filter');
+            filter.length = 1; // Reseta as opções, mantendo "Todos os Meses"
+            const availableMonths = new Set();
+            allLogs.forEach(log => {
+                if (log.timestamp) {
+                    const date = log.timestamp.toDate();
+                    const monthKey = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+                    availableMonths.add(monthKey);
+                }
+            });
+            const sortedMonths = Array.from(availableMonths).sort().reverse();
+            sortedMonths.forEach(monthKey => {
+                const [year, month] = monthKey.split('-');
+                const date = new Date(year, month - 1, 1);
+                const monthName = date.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+                const option = new Option(monthName.charAt(0).toUpperCase() + monthName.slice(1), monthKey);
+                filter.add(option);
+            });
+        }
+        function renderGlobalActivityLog() {
+            const container = document.getElementById('global-history-log');
+            const selectedMonth = document.getElementById('month-filter').value;
+            let logsToRender = allLogs;
+            if (selectedMonth) {
+                logsToRender = allLogs.filter(log => {
+                    if (!log.timestamp) return false;
+                    const date = log.timestamp.toDate();
+                    const monthKey = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+                    return monthKey === selectedMonth;
+                });
+            }
+            container.innerHTML = logsToRender.length === 0 ? '<p class="text-center p-4">Nenhuma atividade neste período.</p>' : logsToRender.map(log => {
+                const date = log.timestamp ? log.timestamp.toDate().toLocaleString('pt-BR') : 'Data inválida';
+                return `<div><p><strong>${log.userName || 'Usuário'}</strong> - ${date}: ${log.action}</p><hr class="border-white/50 my-1"></div>`;
+            }).join('');
+        }
+        async function clearAllHistory() {
+            showNotification("Limpando histórico... Isso pode levar um momento.");
+            try {
+                const logCollection = db.collection('activityLog');
+                const snapshot = await logCollection.limit(500).get(); // Limite para evitar timeouts em grandes coleções
+                if (snapshot.empty) {
+                    showNotification("O histórico já está vazio.");
+                    return;
+                }
+                const batch = db.batch();
+                snapshot.docs.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
+                showNotification("Histórico limpo com sucesso!");
+                await loadAllData();
+                renderGlobalActivityLog();
+            } catch (error) {
+                console.error("Erro ao limpar histórico:", error);
+                showNotification("Falha ao limpar o histórico.");
+            }
+        }
+        // --- RESTANTE DAS FUNÇÕES ---
         function showUserView(viewName) {
             const formView = document.getElementById('user-form-view');
             const searchView = document.getElementById('user-pesquisar-view');
-            if (viewName === 'pesquisar') {
-                formView.classList.add('hidden');
-                searchView.classList.remove('hidden');
-            } else {
-                formView.classList.remove('hidden');
-                searchView.classList.add('hidden');
-            }
-            document.querySelectorAll('#cadastrar-page .btn-sub').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.userview === viewName);
-            });
+            if (viewName === 'pesquisar') { formView.classList.add('hidden'); searchView.classList.remove('hidden'); } 
+            else { formView.classList.remove('hidden'); searchView.classList.add('hidden'); }
+            document.querySelectorAll('#cadastrar-page .btn-sub').forEach(btn => btn.classList.toggle('active', btn.dataset.userview === viewName));
         }
-        function newUser() { 
-            clearUserForm(); 
-            showUserView('novo'); 
-        }
+        function newUser() { clearUserForm(); showUserView('novo'); }
         function clearUserForm() { 
             ['user-id', 'user-name', 'user-password', 'user-login', 'user-vencimento'].forEach(id => document.getElementById(id).value = ''); 
             document.getElementById('user-vencimento-label').textContent = 'Selecione uma data'; 
@@ -143,10 +207,7 @@
         }
         function editUser(userId) { 
             const user = allUsers.find(u => u.id === userId); 
-            if (user) { 
-                populateUserForm(user); 
-                showUserView('novo'); 
-            } 
+            if (user) { populateUserForm(user); showUserView('novo'); } 
         }
         async function saveCurrentUser() {
             const userId = document.getElementById('user-id').value;
@@ -179,41 +240,19 @@
         function showPromptView(viewName) {
             const novoView = document.getElementById('prompt-novo-view');
             const pesquisarView = document.getElementById('prompt-pesquisar-view');
-            if (viewName === 'pesquisar') {
-                novoView.classList.add('hidden');
-                pesquisarView.classList.remove('hidden');
-            } else {
-                novoView.classList.remove('hidden');
-                pesquisarView.classList.add('hidden');
-            }
-            document.querySelectorAll('#adc-prompts-page .btn-sub-prompt').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.view === viewName);
-            });
+            if (viewName === 'pesquisar') { novoView.classList.add('hidden'); pesquisarView.classList.remove('hidden'); } 
+            else { novoView.classList.remove('hidden'); pesquisarView.classList.add('hidden'); }
+            document.querySelectorAll('#adc-prompts-page .btn-sub-prompt').forEach(btn => btn.classList.toggle('active', btn.dataset.view === viewName));
         }
-        function newPrompt() { 
-            clearPromptForm(); 
-            showPromptView('novo'); 
-        }
+        function newPrompt() { clearPromptForm(); showPromptView('novo'); }
         function editPrompt(promptId) { 
             const prompt = allPrompts.find(p => p.id === promptId); 
-            if (prompt) { 
-                populatePromptForm(prompt); 
-                showPromptView('novo'); 
-            } 
+            if (prompt) { populatePromptForm(prompt); showPromptView('novo'); } 
         }
         function handleIaBrandChange() {
-            const marcaIaInput = document.getElementById('prompt-marca-ia');
-            const linkIaInput = document.getElementById('prompt-link');
-            const brand = marcaIaInput.value.trim().toLowerCase();
-            const iaLinks = {
-                'gemini': 'https://gemini.google.com/',
-                'chatgpt': 'https://chatgpt.com/',
-                'grok': 'https://grok.com/',
-                'copilot': 'https://copilot.microsoft.com/'
-            };
-            if (iaLinks[brand]) {
-                linkIaInput.value = iaLinks[brand];
-            }
+            const brand = document.getElementById('prompt-marca-ia').value.trim().toLowerCase();
+            const iaLinks = { 'gemini': 'https://gemini.google.com/', 'chatgpt': 'https://chatgpt.com/', 'grok': 'https://grok.com/', 'copilot': 'https://copilot.microsoft.com/' };
+            if (iaLinks[brand]) document.getElementById('prompt-link').value = iaLinks[brand];
         }
         function updateImagePreviewFromURL() {
             const imageUrl = document.getElementById('prompt-image-url').value.trim();
@@ -241,23 +280,20 @@
         }
         async function saveCurrentPrompt() {
             const saveButton = document.getElementById('save-prompt-button');
-            saveButton.disabled = true;
-            saveButton.textContent = 'SALVANDO...';
+            saveButton.disabled = true; saveButton.textContent = 'SALVANDO...';
             const promptId = document.getElementById('prompt-id').value;
-            const imageUrl = document.getElementById('prompt-image-url').value.trim();
             const promptData = { 
                 marca_ia: document.getElementById('prompt-marca-ia').value.trim(), 
                 category: document.getElementById('prompt-category').value.trim(), 
                 description: document.getElementById('prompt-description').value.trim(), 
                 link: document.getElementById('prompt-link').value.trim(), 
                 text: document.getElementById('prompt-text').value.trim(), 
-                image: imageUrl || '',
+                image: document.getElementById('prompt-image-url').value.trim() || '',
                 createdAt: firebase.firestore.FieldValue.serverTimestamp() 
             };
             if (!promptData.description || !promptData.category || !promptData.marca_ia) { 
                 showNotification("Preencha Descrição, Categoria e Marca IA."); 
-                saveButton.disabled = false;
-                saveButton.textContent = 'SALVAR';
+                saveButton.disabled = false; saveButton.textContent = 'SALVAR';
                 return; 
             }
             try {
@@ -272,21 +308,13 @@
                 await loadAllData(); 
                 renderPrompts();
                 newPrompt();
-            } catch (error) { 
-                console.error("Erro ao salvar prompt:", error); 
-                showNotification("Erro ao salvar prompt."); 
-            } finally {
-                saveButton.disabled = false;
-                saveButton.textContent = 'SALVAR';
-            }
+            } catch (error) { console.error("Erro ao salvar prompt:", error); showNotification("Erro ao salvar prompt."); 
+            } finally { saveButton.disabled = false; saveButton.textContent = 'SALVAR'; }
         }
         function clearPromptForm() { 
             ['prompt-id', 'prompt-marca-ia', 'prompt-category', 'prompt-description', 'prompt-link', 'prompt-text'].forEach(id => document.getElementById(id).value = ''); 
             document.getElementById('prompt-image-url').value = 'https://lh3.googleusercontent.com/d/';
-            const preview = document.getElementById('prompt-image-preview');
-            preview.src = ''; 
-            preview.classList.add('hidden'); 
-            document.getElementById('image-placeholder').classList.remove('hidden'); 
+            updateImagePreviewFromURL();
         }
         function populatePromptForm(prompt) {
             document.getElementById('prompt-id').value = prompt.id;
@@ -295,13 +323,8 @@
             document.getElementById('prompt-description').value = prompt.description;
             document.getElementById('prompt-link').value = prompt.link || '';
             document.getElementById('prompt-text').value = prompt.text;
-            if (prompt.image) {
-                document.getElementById('prompt-image-url').value = prompt.image;
-                updateImagePreviewFromURL();
-            } else {
-                document.getElementById('prompt-image-url').value = 'https://lh3.googleusercontent.com/d/';
-                updateImagePreviewFromURL();
-            }
+            document.getElementById('prompt-image-url').value = prompt.image || 'https://lh3.googleusercontent.com/d/';
+            updateImagePreviewFromURL();
         }
         async function deleteCurrentPrompt() {
             const promptId = document.getElementById('prompt-id').value;
@@ -321,14 +344,9 @@
             const searchTerm = document.getElementById('prompt-search-input').value.toLowerCase();
             const container = document.getElementById('prompt-list');
             const filtered = allPrompts.filter(p => p.description.toLowerCase().includes(searchTerm) || p.category.toLowerCase().includes(searchTerm));
-            container.innerHTML = filtered.length === 0 ? '<p class="text-center p-4">Nenhum prompt.</p>' : filtered.map(p => `<div class="p-2 bg-white/50 rounded-md cursor-pointer hover:bg-white/80" onclick="editPrompt('${p.id}')"><p class="font-semibold">${p.description}</p><p class="text-xs text-cyan-800 font-bold">${p.category.toUpperCase()}</p></div>`).join('');
-        }
-        function renderGlobalActivityLog() {
-            const container = document.getElementById('global-history-log');
-            container.innerHTML = allLogs.length === 0 ? '<p class="text-center p-4">Nenhuma atividade.</p>' : allLogs.map(log => {
-                const date = log.timestamp ? log.timestamp.toDate().toLocaleString('pt-BR') : 'Data inválida';
-                return `<div><p><strong>${log.userName || 'Usuário'}</strong> - ${date}: ${log.action}</p><hr class="border-white/50 my-1"></div>`;
-            }).join('');
+            container.innerHTML = filtered.length === 0 ? '<p class="text-center p-4">Nenhum prompt encontrado.</p>' : filtered.map(p => `<div class="p-2 bg-white/50 rounded-md cursor-pointer hover:bg-white/80" onclick="editPrompt('${p.id}')"><p class="font-semibold">${p.description}</p><p class="text-xs text-cyan-800 font-bold">${p.category.toUpperCase()}</p></div>`).join('');
+            const totalCounter = document.getElementById('prompt-total-counter');
+            if(totalCounter) totalCounter.textContent = `Total de Prompts: ${allPrompts.length}`;
         }
         function updateUserVencimentoLabel() { const dateValue = document.getElementById('user-vencimento').value; if(dateValue) { const [y,m,d] = dateValue.split('-'); document.getElementById('user-vencimento-label').textContent = `Vence em ${d}/${m}/${y}`; } }
         function showNotification(message) { const el = document.getElementById('notification-modal'); el.querySelector('p').textContent = message; el.classList.remove('hidden'); setTimeout(() => el.classList.add('hidden'), 3500); }
