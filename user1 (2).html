@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yoshi Prompts - Início</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* TEMA ESCURO E FONTES */
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #121212; /* Fundo escuro principal */
+            color: #E0E0E0;
+        }
+        
+        /* CONTAINER PRINCIPAL */
+        .main-container { 
+            max-width: 500px; 
+            margin: 0 auto; 
+            background-color: #1F1F1F; /* Fundo do app (como na Imagem 1) */
+            min-height: 100vh;
+        }
+
+        /* BOTÕES DE FILTRO (TEMA ESCURO) */
+        .filter-button {
+            background-color: #333333;
+            color: #E0E0E0;
+            border: 1px solid #444;
+            transition: all 0.2s ease;
+        }
+        .filter-button:hover {
+            background-color: #444444;
+            border-color: #555;
+        }
+        .filter-select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23E0E0E0" class="bi bi-chevron-down" viewBox="0 0 16 16"%3E%3Cpath fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/%3E%3C/svg%3E');
+            background-repeat: no-repeat;
+            background-position: right 0.7rem top 50%;
+            background-size: .65rem auto;
+        }
+
+        /* ESTILOS DOS CARDS (GRID vs LISTA) */
+        #prompts-container.grid-view {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        #prompts-container.list-view {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* CARD INDIVIDUAL (ambos os modos) */
+        .prompt-card {
+            background-color: #2A2A2A;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .prompt-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.4);
+        }
+        .prompt-card-tags {
+            font-size: 0.7rem;
+            color: #A0A0A0;
+            text-transform: uppercase;
+        }
+        .prompt-card-title {
+            color: #FFFFFF;
+            font-weight: 600;
+        }
+        .prompt-card-date {
+            font-size: 0.75rem;
+            color: #888888;
+        }
+
+        /* Estilos específicos GRID (Imagem 1) */
+        #prompts-container.grid-view .prompt-card-content {
+            padding: 0.75rem;
+        }
+        #prompts-container.grid-view .prompt-card-image {
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+        }
+
+        /* Estilos específicos LISTA (Imagem 2) */
+        #prompts-container.list-view .prompt-card {
+            display: flex;
+            align-items: center;
+        }
+        #prompts-container.list-view .prompt-card-image {
+            width: 80px;
+            height: 80px;
+            flex-shrink: 0;
+            object-fit: cover;
+            border-radius: 0.5rem;
+            margin: 0.75rem;
+        }
+        #prompts-container.list-view .prompt-card-content {
+            padding: 0.75rem 0.75rem 0.75rem 0;
+        }
+
+        /* TELA DE DETALHE (Imagem 3) */
+        .detail-view-tag {
+            background-color: #333;
+            border: 1px solid #444;
+            color: #E0E0E0;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        /* MODAL DE PROMPT (Imagem 4) */
+        #prompt-details-modal-content {
+            background-color: #2A2A2A;
+            border: 1px solid #444;
+        }
+        .prompt-modal-code {
+            background-color: #1F1F1F;
+            color: #E0E0E0;
+            font-family: 'Courier New', Courier, monospace;
+            max-height: 40vh;
+            overflow-y: auto;
+            border: 1px solid #444;
+        }
+        .modal-button-copy {
+            background-color: #E53E3E; /* Vermelho como na Imagem 4 */
+            color: white;
+        }
+        .modal-button-copy:hover {
+            background-color: #C53030;
+        }
+        .modal-button-secondary {
+            background-color: #4A5568; /* Cinza escuro */
+            color: white;
+        }
+        .modal-button-secondary:hover {
+            background-color: #2D3748;
+        }
+
+    </style>
+</head>
+<body class="text-gray-200">
+
+    <div id="notification-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
+        <div class="bg-gray-800 text-white p-6 rounded-lg shadow-xl text-center"><p id="notification-message"></p></div>
+    </div>
+
+    <div class="main-container shadow-2xl">
+
+        <div id="view-list">
+            <header class="p-4 space-y-4">
+                <div class="flex justify-between items-center text-white">
+                    <button onclick="handleLogout()" class="text-4xl transform hover:scale-110 transition-transform duration-200">&laquo;</button>
+                    <h1 class="text-2xl font-bold text-center">Últimas postagens</h1>
+                    <button id="layout-toggle-button" onclick="toggleLayout()" class="text-3xl p-2">
+                        <svg id="icon-list" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-list-ul" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm-3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+                        </svg>
+                        <svg id="icon-grid" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-grid-fill hidden" viewBox="0 0 16 16">
+                            <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3A1.5 1.5 0 0 1 15 10.5v3A1.5 1.5 0 0 1 13.5 15h-3A1.5 1.5 0 0 1 9 13.5v-3z"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div>
+                    <h2 id="welcome-message" class="text-3xl font-bold text-white"></h2>
+                    <p id="user-name" class="text-xl text-gray-300"></p>
+                </div>
+
+                <div id="expiration-warning" class="hidden bg-red-600 text-white text-center p-3 rounded-lg shadow-lg"></div>
+
+                <div class="flex flex-col sm:flex-row justify-around items-center gap-2">
+                    <button onclick="applyFilters(true)" class="filter-button w-full sm:w-auto flex-1 py-2 px-4 rounded-full font-semibold">TODOS</button>
+                    <div class="relative w-full sm:w-auto flex-1">
+                        <select id="ia-filter" onchange="applyFilters()" class="filter-button filter-select w-full py-2 px-4 rounded-full font-semibold text-center">
+                            <option value="">IA</option>
+                        </select>
+                    </div>
+                    <div class="relative w-full sm:w-auto flex-1">
+                        <select id="category-filter" onchange="applyFilters()" class="filter-button filter-select w-full py-2 px-4 rounded-full font-semibold text-center">
+                            <option value="">CATEGORIA</option>
+                        </select>
+                    </div>
+                </div>
+            </header>
+
+            <main id="prompts-container" class="p-4 grid-view">
+                <p class="text-center text-lg col-span-2">Carregando prompts...</p>
+            </main>
+        </div>
+
+        <div id="view-detail" class="hidden">
+            
+            <div id="prompt-details-modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50" onclick="hidePromptModal()">
+                <div id="prompt-details-modal-content" class="w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4" onclick="event.stopPropagation()">
+                    <div id="modal-prompt-text" class="prompt-modal-code p-4 rounded-lg text-sm">
+                        </div>
+                    
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
+                        <a id="modal-ia-link" href="#" target="_blank" class="modal-button-secondary w-full sm:w-auto font-bold py-3 px-6 rounded-lg no-underline text-center transition-all">
+                            Acessar IA
+                        </a>
+                        <button id="modal-copy-button" class="modal-button-copy w-full sm:w-auto font-bold py-3 px-6 rounded-lg transition-all">
+                            Copiar
+                        </button>
+                        <button onclick="hidePromptModal()" class="modal-button-secondary w-full sm:w-auto font-bold py-3 px-6 rounded-lg transition-all">
+                            Fechar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <header class="p-4 flex justify-between items-center text-white">
+                <button onclick="showListView()" class="text-4xl transform hover:scale-110 transition-transform duration-200">&laquo;</button>
+                <h2 class="text-xl font-bold text-center">CLIQUE PARA ABRIR O PROMPT</h2>
+                <span id="detail-prompt-number" class="text-xl font-black"></span>
+            </header>
+            
+            <main class="p-4 space-y-4">
+                <img id="detail-image" src="" alt="Imagem do Prompt" class="rounded-lg w-full h-auto object-cover cursor-pointer" onclick="showPromptModal()">
+                
+                <div class="flex gap-2">
+                    <span id="detail-ia-tag" class="detail-view-tag py-1 px-3 rounded-full"></span>
+                    <span id="detail-category-tag" class="detail-view-tag py-1 px-3 rounded-full"></span>
+                </div>
+            </main>
+        </div>
+
+        <footer class="text-center p-4 text-gray-500 text-sm">By: A.Yoshi</footer>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        // --- CONFIGURAÇÃO DO FIREBASE ---
+        const firebaseConfig = {
+          apiKey: "AIzaSyAg37Z0ahi-a_jNt_X89UUY1oj7RiNuMFs",
+          authDomain: "yoshi-prompts-app.firebaseapp.com",
+          projectId: "yoshi-prompts-app",
+          storageBucket: "yoshi-prompts-app.appspot.com",
+          messagingSenderId: "509816669209",
+          appId: "1:509816669209:web:695a6c4bd2d18014371688"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // --- VARIÁVEIS GLOBAIS ---
+        let allPrompts = [];
+        let currentUsername = '';
+        let currentUserId = '';
+        let currentLayout = 'grid'; // 'grid' ou 'list'
+
+        // --- ELEMENTOS DO DOM ---
+        const viewList = document.getElementById('view-list');
+        const viewDetail = document.getElementById('view-detail');
+        const promptsContainer = document.getElementById('prompts-container');
+        const layoutToggleButton = document.getElementById('layout-toggle-button');
+        const iconList = document.getElementById('icon-list');
+        const iconGrid = document.getElementById('icon-grid');
+        const welcomeMessage = document.getElementById('welcome-message');
+
+        // --- INICIALIZAÇÃO ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            currentUsername = sessionStorage.getItem('username');
+            currentUserId = sessionStorage.getItem('userId');
+
+            if (!currentUsername || !currentUserId) {
+                window.location.href = './index.html';
+                return;
+            }
+
+            // Define a saudação (Bom dia, Boa tarde, Boa noite)
+            const hour = new Date().getHours();
+            if (hour < 12) { welcomeMessage.textContent = 'Bom dia.'; }
+            else if (hour < 18) { welcomeMessage.textContent = 'Boa tarde.'; }
+            else { welcomeMessage.textContent = 'Boa noite.'; }
+            
+            document.getElementById('user-name').textContent = currentUsername.toUpperCase();
+            await logActivity('Login');
+
+            try {
+                const snapshot = await db.collection('prompts').orderBy('createdAt', 'desc').get();
+                allPrompts = snapshot.docs.map((doc, index) => ({ 
+                    id: doc.id, 
+                    index: index + 1, // Adiciona um número de cadastro
+                    ...doc.data() 
+                }));
+                
+                displayExpirationWarning();
+                populateFilters();
+                applyFilters(true);
+            } catch (error) {
+                console.error("Erro ao carregar prompts:", error);
+                promptsContainer.innerHTML = `<div class="text-center text-lg col-span-2">Erro ao carregar prompts.</div>`;
+            }
+        });
+
+        // --- RENDERIZAÇÃO E FILTROS ---
+        function applyFilters(showAll = false) {
+            if (showAll) {
+                document.getElementById('ia-filter').value = '';
+                document.getElementById('category-filter').value = '';
+                renderPrompts(allPrompts);
+                return;
+            }
+            let filtered = allPrompts.filter(p => 
+                (document.getElementById('ia-filter').value ? p.marca_ia === document.getElementById('ia-filter').value : true) &&
+                (document.getElementById('category-filter').value ? p.category === document.getElementById('category-filter').value : true)
+            );
+            renderPrompts(filtered);
+        }
+
+        function renderPrompts(promptsToRender) {
+            promptsContainer.innerHTML = '';
+            if (promptsToRender.length === 0) {
+                promptsContainer.innerHTML = `<div class="text-center text-lg col-span-2">Nenhum prompt encontrado.</div>`;
+                return;
+            }
+            
+            // Define o layout atual no container
+            promptsContainer.className = `p-4 ${currentLayout}-view`;
+
+            // Atualiza o ícone do botão de toggle
+            if (currentLayout === 'grid') {
+                iconList.classList.remove('hidden');
+                iconGrid.classList.add('hidden');
+            } else {
+                iconList.classList.add('hidden');
+                iconGrid.classList.remove('hidden');
+            }
+
+            promptsToRender.forEach(prompt => {
+                const imageUrl = prompt.image || 'https://placehold.co/400x400/333/EEE?text=Sem+Imagem';
+                const tags = `#${prompt.category || 'geral'} , #${prompt.marca_ia || 'IA'}`;
+                
+                // Formata a data (ex: outubro 21, 2025)
+                const date = prompt.createdAt?.toDate ? 
+                    prompt.createdAt.toDate().toLocaleDateString('pt-BR', { month: 'long', day: '2-digit', year: 'numeric' }) : 
+                    'Data indisponível';
+
+                const cardHtml = `
+                <div class="prompt-card" onclick="showDetailView('${prompt.id}')">
+                    <img src="${imageUrl}" alt="${prompt.description}" class="prompt-card-image">
+                    <div class="prompt-card-content">
+                        <p class="prompt-card-tags">${tags}</p>
+                        <h3 class="prompt-card-title truncate">${prompt.description}</h3>
+                        <p class="prompt-card-date">${date}</p>
+                    </div>
+                </div>`;
+                promptsContainer.innerHTML += cardHtml;
+            });
+        }
+        
+        function populateFilters() {
+            const iaFilter = document.getElementById('ia-filter');
+            const categoryFilter = document.getElementById('category-filter');
+            const uniqueIas = [...new Set(allPrompts.map(p => p.marca_ia).filter(Boolean))];
+            const uniqueCategories = [...new Set(allPrompts.map(p => p.category).filter(Boolean))];
+            uniqueIas.forEach(ia => iaFilter.add(new Option(ia, ia)));
+            uniqueCategories.forEach(cat => categoryFilter.add(new Option(cat, cat)));
+        }
+
+        // --- CONTROLE DE NAVEGAÇÃO (VIEWS) ---
+        function showDetailView(promptId) {
+            const prompt = allPrompts.find(p => p.id === promptId);
+            if (!prompt) return;
+
+            // 1. Popula a Tela de Detalhe (Imagem 3)
+            document.getElementById('detail-prompt-number').textContent = String(prompt.index).padStart(2, '0');
+            document.getElementById('detail-image').src = prompt.image || 'https://placehold.co/600x400/333/EEE?text=Sem+Imagem';
+            document.getElementById('detail-ia-tag').textContent = prompt.marca_ia || 'IA';
+            document.getElementById('detail-category-tag').textContent = prompt.category || 'Geral';
+
+            // 2. Prepara o Modal (Imagem 4)
+            const promptTextHtml = prompt.text.replace(/\n/g, '<br>');
+            document.getElementById('modal-prompt-text').innerHTML = promptTextHtml;
+            document.getElementById('modal-ia-link').href = prompt.link || '#';
+            
+            const escapedDesc = prompt.description.replace(/'/g, "\\'");
+            document.getElementById('modal-copy-button').onclick = () => copyToClipboard('modal-prompt-text', escapedDesc);
+
+            // 3. Troca as telas
+            viewList.classList.add('hidden');
+            viewDetail.classList.remove('hidden');
+            window.scrollTo(0, 0); // Rola para o topo
+        }
+
+        function showListView() {
+            viewDetail.classList.add('hidden');
+            viewList.classList.remove('hidden');
+            hidePromptModal(); // Garante que o modal feche ao voltar
+        }
+
+        // --- CONTROLE DE LAYOUT (GRID/LIST) ---
+        function toggleLayout() {
+            currentLayout = (currentLayout === 'grid') ? 'list' : 'grid';
+            applyFilters(); // Re-renderiza os prompts com o novo layout
+        }
+
+        // --- MODAL DO PROMPT (Imagem 4) ---
+        function showPromptModal() {
+            document.getElementById('prompt-details-modal').classList.remove('hidden');
+        }
+        function hidePromptModal() {
+            document.getElementById('prompt-details-modal').classList.add('hidden');
+        }
+
+        // --- FUNÇÕES UTILITÁRIAS ---
+        function copyToClipboard(elementId, promptDescription) {
+            const textToCopy = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                logActivity('Copiou Prompt', { promptDescription });
+                showNotification('Texto copiado!');
+                setTimeout(hidePromptModal, 1000); // Fecha o modal após copiar
+            });
+        }
+
+        function showNotification(message) {
+            const modal = document.getElementById('notification-modal');
+            modal.querySelector('p').textContent = message;
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.add('hidden'), 2000);
+        }
+        
+        function displayExpirationWarning() {
+            const daysLeft = sessionStorage.getItem('expirationWarningDays');
+            if (daysLeft !== null) {
+                const warningDiv = document.getElementById('expiration-warning');
+                let message = parseInt(daysLeft) === 0 ? 'Seu acesso expira HOJE!' :
+                              parseInt(daysLeft) === 1 ? 'Seu acesso expira em 1 dia!' :
+                              `Seu acesso expira em ${daysLeft} dias!`;
+                warningDiv.textContent = message + ' Contate o administrador para renovação.';
+                warningDiv.classList.remove('hidden');
+            }
+        }
+
+        async function logActivity(action, details = null) {
+            const newLog = { userId: currentUserId, userName: currentUsername, action, details, timestamp: new Date() };
+            try { await db.collection('activityLog').add(newLog); } 
+            catch (error) { console.error("Erro ao registrar atividade:", error); }
+        }
+
+        function handleLogout() {
+            logActivity('Logout');
+            setTimeout(() => {
+                sessionStorage.clear();
+                window.location.href = 'index.html'; 
+            }, 200);
+        }
+    </script>
+</body>
+</html>
