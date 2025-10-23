@@ -420,7 +420,7 @@
             navigator.clipboard.writeText(textToCopy).then(() => {
                 logActivity('Copiou Prompt', { promptDescription });
                 showNotification('Texto copiado!');
-                setTimeout(hidePromptModal, 1000); // Fecha o modal após copiar
+                // A LINHA QUE FECHAVA O MODAL FOI REMOVIDA DAQUI
             });
         }
 
@@ -458,4 +458,5 @@
         }
     </script>
 </body>
+
 </html>
