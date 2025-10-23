@@ -286,11 +286,13 @@
             document.getElementById('user-name').textContent = currentUsername.toUpperCase();
             await logActivity('Login');
 
-            try {
+           try {
                 const snapshot = await db.collection('prompts').orderBy('createdAt', 'desc').get();
+                const totalPrompts = snapshot.docs.length; // Pega o número total de prompts
+                
                 allPrompts = snapshot.docs.map((doc, index) => ({ 
                     id: doc.id, 
-                    index: index + 1, // Adiciona um número de cadastro
+                    index: totalPrompts - index, // Inverte a numeração (o mais antigo é 1)
                     ...doc.data() 
                 }));
                 
