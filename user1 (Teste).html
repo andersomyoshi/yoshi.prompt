@@ -7,11 +7,15 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* TEMA ESCURO E FONTES */
+/* TEMA DE FUNDO (GRADIENTE) E FONTES */
         body { 
             font-family: 'Inter', sans-serif; 
-            background-color: #121212; /* Fundo escuro principal */
-            color: #E0E0E0;
+            /* Este é o fundo gradiente da sua tela de login */
+            background: linear-gradient(135deg, #8bc6f2, #a18dce);
+            background-size: cover; /* Garante que cubra a tela toda */
+            background-position: center; /* Centraliza o fundo */
+            background-attachment: fixed; /* O fundo fica parado ao rolar a página */
+            color: #E0E0E0; /* Mantém o texto claro (do tema escuro) */
         }
         
         /* CONTAINER PRINCIPAL */
@@ -460,3 +464,4 @@
 </body>
 
 </html>
+
