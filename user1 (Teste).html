@@ -7,15 +7,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-/* TEMA DE FUNDO (GRADIENTE) E FONTES */
+        /* TEMA ESCURO E FONTES */
         body { 
             font-family: 'Inter', sans-serif; 
-            /* Este é o fundo gradiente da sua tela de login */
-            background: linear-gradient(135deg, #8bc6f2, #a18dce);
-            background-size: cover; /* Garante que cubra a tela toda */
-            background-position: center; /* Centraliza o fundo */
-            background-attachment: fixed; /* O fundo fica parado ao rolar a página */
-            color: #E0E0E0; /* Mantém o texto claro (do tema escuro) */
+            background-color: #121212; /* Fundo escuro principal */
+            color: #E0E0E0;
         }
         
         /* CONTAINER PRINCIPAL */
@@ -161,8 +157,8 @@
 
         <div id="view-list">
             <header class="p-4 space-y-4">
-                <div class="flex justify-between items-center text-white">
-                    <button onclick="handleLogout()" class="text-4xl transform hover:scale-110 transition-transform duration-200">&laquo;</button>
+<div class="flex justify-between items-center text-white">
+                    <button onclick="handleLogout()" class="text-xl font-semibold hover:text-red-400 transition-colors duration-200">Sair</button>
                     <h1 class="text-2xl font-bold text-center">Últimas postagens</h1>
                     <button id="layout-toggle-button" onclick="toggleLayout()" class="text-3xl p-2">
                         <svg id="icon-list" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-list-ul" viewBox="0 0 16 16">
@@ -221,9 +217,8 @@
                     </div>
                 </div>
             </div>
-            <header class="p-4 flex justify-between items-center text-white">
-                <button onclick="showListView()" class="text-4xl transform hover:scale-110 transition-transform duration-200">&laquo;</button>
-                <h2 class="text-xl font-bold text-center">CLIQUE PARA ABRIR O PROMPT</h2>
+<header class="p-4 flex justify-between items-center text-white">
+                <button onclick="showListView()" class="text-xl font-semibold hover:text-gray-300 transition-colors duration-200">Voltar</button>
                 <span id="detail-prompt-number" class="text-xl font-black"></span>
             </header>
             
@@ -464,4 +459,5 @@
 </body>
 
 </html>
+
 
