@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Meu Mobile Launcher PRO</title>
+    <style>
+        /* --- Reset e Variáveis --- */
+        :root {
+            --bg-phone: #1a1a1a;
+            --bg-app: #f4f4f9;
+            --text-dark: #333;
+            --text-light: #fff;
+            --primary: #007bff;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --success: #28a745;
+            --shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-phone);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- Estrutura do Celular (Simulação) --- */
+        .phone-container {
+            width: 360px;
+            height: 740px;
+            background-color: var(--bg-app);
+            border: 12px solid #333;
+            border-radius: 40px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Barra Superior (Status e Botão Mais) --- */
+        .status-bar {
+            height: 60px;
+            background-color: var(--primary);
+            color: var(--text-light);
+            display: flex;
+            justify-content: center; /* Centraliza o botão + */
+            align-items: center;
+            padding: 0 20px;
+            font-size: 24px;
+            font-weight: bold;
+            position: relative;
+            z-index: 10;
+        }
+
+        .add-main-btn {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 32px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .add-main-btn:active { transform: scale(1.2); }
+
+        /* --- Área de Grade de Apps --- */
+        .app-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-auto-rows: min-content;
+            gap: 15px;
+            padding: 20px;
+            overflow-y: auto;
+            align-content: start;
+        }
+
+        /* --- Estilo do Ícone do App --- */
+        .app-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            text-align: center;
+            transition: opacity 0.2s;
+        }
+
+        .app-item:active { opacity: 0.7; }
+
+        .app-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            background-color: #fff;
+            object-fit: cover;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border: 1px solid #eee;
+        }
+
+        .app-label {
+            font-size: 11px;
+            color: var(--text-dark);
+            margin-top: 6px;
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 500;
+        }
+
+        /* Botão de exclusão interno (aparece no modo gestão) */
+        .delete-overlay {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 14px;
+            display: none; /* Escondido por padrão */
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* --- Modais (Janelas Pop-up) --- */
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: none; /* Escondido */
+            justify-content: center;
+            align-items: flex-end; /* Aparece de baixo */
+            z-index: 100;
+        }
+
+        .modal-content {
+            width: 100%;
+            background-color: white;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            padding: 20px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease-out;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.2);
+        }
+
+        .modal-overlay.open { display: flex; }
+        .modal-overlay.open .modal-content { transform: translateY(0); }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .modal-header h2 { margin: 0; font-size: 18px; color: var(--text-dark); }
+        .close-modal { background: none; border: none; font-size: 20px; color: #999; cursor: pointer; }
+
+        /* --- Formulários e Botões nos Modais --- */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-size: 14px; color: #666; }
+        
+        input[type="text"], input[type="url"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+            font-size: 14px;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 10px;
+            transition: background 0.2s;
+        }
+
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-success { background-color: var(--success); color: white; }
+        .btn-warning { background-color: var(--warning); color: var(--text-dark); }
+        .btn-danger { background-color: var(--danger); color: white; }
+        
+        /* Layout de botões lado a lado */
+        .row-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        /* Modo de Gestão (Tremendo e mostrando delete) */
+        .managing .app-item .delete-overlay { display: flex; }
+        
+        @keyframes tremble {
+            0% { transform: rotate(-1deg); }
+            50% { transform: rotate(1deg); }
+            100% { transform: rotate(-1deg); }
+        }
+        
+        .managing .app-item {
+            animation: tremble 0.3s infinite;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="phone-container">
+        <div class="status-bar">
+            <button class="add-main-btn" onclick="openModal('modalMenu')">+</button>
+        </div>
+
+        <div class="app-grid" id="appGrid">
+            </div>
+
+        <div class="modal-overlay" id="modalMenu" onclick="closeModalIfOutside(event)">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Gerenciar Launcher</h2>
+                    <button class="close-modal" onclick="closeModal('modalMenu')">✕</button>
+                </div>
+                <button class="action-btn btn-success" onclick="openModal('modalAdd'); closeModal('modalMenu');">Adicionar Novo App</button>
+                <button class="action-btn btn-warning" onclick="toggleManagementMode('edit'); closeModal('modalMenu');">Editar Apps Existentes</button>
+                <button class="action-btn btn-danger" onclick="toggleManagementMode('delete'); closeModal('modalMenu');">Excluir Apps</button>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="modalAdd" onclick="closeModalIfOutside(event)">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Novo Aplicativo</h2>
+                    <button class="close-modal" onclick="closeModal('modalAdd')">✕</button>
+                </div>
+                <div class="form-group">
+                    <label>Nome do App</label>
+                    <input type="text" id="addName" placeholder="Ex: Meu Site">
+                </div>
+                <div class="form-group">
+                    <label>Link da Imagem (Ícone)</label>
+                    <input type="url" id="addImg" placeholder="Link .png ou .jpg">
+                </div>
+                <div class="form-group">
+                    <label>Link de Destino (URL)</label>
+                    <input type="url" id="addUrl" placeholder="https://...">
+                </div>
+                <button class="action-btn btn-primary" onclick="addNewApp()">Salvar App</button>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="modalEdit" onclick="closeModalIfOutside(event)">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Editar Aplicativo</h2>
+                    <button class="close-modal" onclick="closeModal('modalEdit')">✕</button>
+                </div>
+                <input type="hidden" id="editIndex">
+                <div class="form-group">
+                    <label>Nome do App</label>
+                    <input type="text" id="editName">
+                </div>
+                <div class="form-group">
+                    <label>Link da Imagem</label>
+                    <input type="url" id="editImg">
+                </div>
+                <div class="form-group">
+                    <label>Link de Destino</label>
+                    <input type="url" id="editUrl">
+                </div>
+                <div class="row-btns">
+                    <button class="action-btn btn-warning" onclick="saveEditApp()">Salvar Alteração</button>
+                    <button class="action-btn btn-danger" onclick="deleteCurrentApp()">Excluir este App</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Dados e Persistência ---
+        const DB_KEY = 'myLauncherDB_v3';
+        const defaultApps = [
+            { name: 'Configurações', url: '#', img: 'https://cdn-icons-png.flaticon.com/512/3953/3953226.png' }
+        ];
+
+        let apps = JSON.parse(localStorage.getItem(DB_KEY)) || defaultApps;
+        let isManaging = false; // Indica se estamos em modo de gestão (edit/delete)
+        let manageMode = ''; // 'edit' ou 'delete'
+
+        // --- Inicialização ---
+        function render() {
+            const grid = document.getElementById('appGrid');
+            grid.innerHTML = '';
+            
+            // Remove classe de gestão caso exista
+            grid.classList.remove('managing');
+
+            apps.forEach((app, index) => {
+                const div = document.createElement('div');
+                div.className = 'app-item';
+                div.onclick = () => handleAppClick(index);
+                
+                div.innerHTML = `
+                    <img src="${app.img}" class="app-icon" onerror="this.src='https://via.placeholder.com/60?text=App'">
+                    <div class="app-label">${app.name}</div>
+                    <div class="delete-overlay">✕</div>
+                `;
+                grid.appendChild(div);
+            });
+            
+            localStorage.setItem(DB_KEY, JSON.stringify(apps));
+        }
+
+        // --- Lógica de Clique no App (Dinâmica) ---
+        function handleAppClick(index) {
+            if (!isManaging) {
+                // Modo normal: abre o link
+                if(apps[index].url !== '#') {
+                    window.open(apps[index].url, '_blank');
+                } else {
+                    alert('Este app não possui link configurado.');
+                }
+            } else if (manageMode === 'edit') {
+                // Modo edição: abre o modal de edição
+                prepareEditModal(index);
+            } else if (manageMode === 'delete') {
+                // Modo exclusão: exclui direto
+                if(confirm(`Deseja excluir "${apps[index].name}"?`)) {
+                    apps.splice(index, 1);
+                    render();
+                }
+            }
+        }
+
+        // --- Gestão de Modais ---
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('open');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('open');
+            // Ao fechar modal de adição, limpa campos
+            if(modalId === 'modalAdd') { clearAddFields(); }
+        }
+
+        function closeModalIfOutside(event) {
+            if (event.target.classList.contains('modal-overlay')) {
+                closeModal(event.target.id);
+            }
+        }
+
+        // --- CRUD - Operações de Dados ---
+
+        // ADICIONAR
+        function addNewApp() {
+            const name = document.getElementById('addName').value;
+            const img = document.getElementById('addImg').value;
+            const url = document.getElementById('addUrl').value;
+
+            if(!name || !url) { alert("Preencha Nome e Link!"); return; }
+
+            const newApp = {
+                name: name,
+                url: url,
+                img: img || 'https://via.placeholder.com/60?text=App'
+            };
+
+            apps.push(newApp);
+            closeModal('modalAdd');
+            render();
+        }
+
+        // EDITAR (Preparar e Salvar)
+        function toggleManagementMode(mode) {
+            isManaging = true;
+            manageMode = mode;
+            document.getElementById('appGrid').classList.add('managing');
+            
+            let msg = mode === 'edit' ? 'Clique no ícone que deseja EDITAR.' : 'Clique no ícone que deseja EXCLUIR.';
+            alert(msg + '\n\nPara sair deste modo, clique no botão + novamente.');
+        }
+
+        function prepareEditModal(index) {
+            const app = apps[index];
+            document.getElementById('editIndex').value = index;
+            document.getElementById('editName').value = app.name;
+            document.getElementById('editImg').value = app.img;
+            document.getElementById('editUrl').value = app.url;
+            
+            isManaging = false; // Sai do modo de tremer para focar na edição
+            document.getElementById('appGrid').classList.remove('managing');
+            openModal('modalEdit');
+        }
+
+        function saveEditApp() {
+            const index = document.getElementById('editIndex').value;
+            
+            apps[index] = {
+                name: document.getElementById('editName').value,
+                img: document.getElementById('editImg').value,
+                url: document.getElementById('editUrl').value
+            };
+            
+            closeModal('modalEdit');
+            render();
+        }
+
+        // EXCLUIR (pelo modal de edição)
+        function deleteCurrentApp() {
+            const index = document.getElementById('editIndex').value;
+            if(confirm(`Tem certeza que quer excluir "${apps[index].name}"?`)) {
+                apps.splice(index, 1);
+                closeModal('modalEdit');
+                render();
+            }
+        }
+
+        // --- Auxiliares ---
+        function clearAddFields() {
+            document.getElementById('addName').value = '';
+            document.getElementById('addImg').value = '';
+            document.getElementById('addUrl').value = '';
+        }
+
+        // Evento para fechar modo de gestão se clicar no + novamente
+        document.querySelector('.add-main-btn').addEventListener('dblclick', () => {
+            if(isManaging) {
+                isManaging = false;
+                manageMode = '';
+                document.getElementById('appGrid').classList.remove('managing');
+                alert('Modo de gestão desativado.');
+            }
+        });
+
+        // Iniciar
+        render();
+
+    </script>
+</body>
+</html>
