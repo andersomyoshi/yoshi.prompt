@@ -3,53 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Launcher Yoshi - Grupos e Pastas</title>
+    <title>Launcher Yoshi - 150x150</title>
     <style>
         :root {
-            --bg-phone: #0f0f0f;
-            --bg-app: #181818;
+            --bg-phone: #0a0a0a;
+            --bg-app: #121212;
             --primary: #007bff;
             --danger: #ff4444;
             --success: #00c851;
-            --folder-bg: #333;
+            --icon-size: 150px; /* Tamanho exato pedido */
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: sans-serif; background: var(--bg-phone); margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-phone); margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; }
 
-        .phone { width: 360px; height: 740px; background: var(--bg-app); border: 10px solid #222; border-radius: 40px; position: relative; display: flex; flex-direction: column; overflow: hidden; }
-        
-        .header { height: 60px; background: var(--primary); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
-        .back-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; visibility: hidden; }
-        .add-btn { background: none; border: none; color: white; font-size: 30px; cursor: pointer; }
-
-        .grid { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; padding: 20px; overflow-y: auto; align-content: start; }
-
-        .app-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; position: relative; width: 100%; }
-        
-        /* CORREÇÃO DO ÍCONE ESTOURADO */
-        .icon-box { 
-            width: 65px; height: 65px; border-radius: 15px; 
-            background: #2a2a2a; display: flex; justify-content: center; 
-            align-items: center; overflow: hidden; position: relative;
-            border: 1px solid #444; font-size: 30px;
+        .phone { 
+            width: 400px; /* Largura levemente maior para caber ícones de 150px */
+            height: 800px; 
+            background: var(--bg-app); 
+            border: 12px solid #222; 
+            border-radius: 40px; 
+            position: relative; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
         }
-        .icon-box img { width: 100%; height: 100%; object-fit: cover; }
         
-        /* Pasta Visual */
-        .is-folder { border: 2px solid var(--primary); }
-        .folder-badge { position: absolute; bottom: 2px; right: 2px; font-size: 10px; background: var(--primary); padding: 2px 4px; border-radius: 4px; }
+        .header { height: 60px; background: var(--primary); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; z-index: 10; }
+        .back-btn { background: none; border: none; color: white; font-size: 18px; cursor: pointer; visibility: hidden; }
+        .add-btn { background: none; border: none; color: white; font-size: 32px; cursor: pointer; }
 
-        .label { font-size: 11px; margin-top: 5px; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* Ajuste da grade para comportar os ícones maiores */
+        .grid { 
+            flex: 1; 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); /* 2 colunas para caber 150px lado a lado */
+            gap: 20px; 
+            padding: 20px; 
+            overflow-y: auto; 
+            justify-items: center;
+        }
+
+        .app-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; width: var(--icon-size); }
+        
+        /* CONTAINER 150x150 CORRIGIDO */
+        .icon-box { 
+            width: var(--icon-size); 
+            height: var(--icon-size); 
+            border-radius: 20px; 
+            background: #2a2a2a; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            overflow: hidden; 
+            position: relative;
+            border: 2px solid #333;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        .icon-box img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; /* Faz a imagem preencher o 150x150 sem esticar */
+            display: block;
+        }
+
+        .icon-box .emoji { font-size: 80px; } /* Emoji maior para o ícone grande */
+        
+        .folder-badge { position: absolute; top: 10px; right: 10px; background: var(--primary); padding: 4px 8px; border-radius: 8px; font-size: 10px; font-weight: bold; }
+
+        .label { font-size: 14px; margin-top: 10px; text-align: center; font-weight: 500; color: #eee; }
 
         /* MODAL */
-        .modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; flex-direction: column; justify-content: flex-end; z-index: 100; }
-        .modal-content { background: #222; padding: 20px; border-radius: 25px 25px 0 0; display: flex; flex-direction: column; gap: 10px; }
-        input, select { padding: 12px; border-radius: 8px; border: 1px solid #444; background: #111; color: white; }
-        .btn { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; flex-direction: column; justify-content: flex-end; z-index: 100; }
+        .modal-content { background: #1a1a1a; padding: 25px; border-radius: 30px 30px 0 0; display: flex; flex-direction: column; gap: 12px; border-top: 2px solid var(--primary); }
+        input, select { padding: 14px; border-radius: 10px; border: 1px solid #333; background: #000; color: white; font-size: 16px; }
+        .btn { padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; }
         
-        .managing .app-item { animation: shake 0.2s infinite; }
-        @keyframes shake { 0% {transform: rotate(-1deg)} 50% {transform: rotate(1deg)} }
+        /* Efeito de tremer no modo edição */
+        .managing .app-item { animation: shake 0.3s infinite; }
+        @keyframes shake { 0% {transform: rotate(-1deg)} 50% {transform: rotate(1deg)} 100% {transform: rotate(-1deg)} }
     </style>
 </head>
 <body>
@@ -64,38 +97,38 @@
 
     <div class="modal" id="modalMenu">
         <div class="modal-content">
-            <button class="btn" style="background:var(--success)" onclick="openForm('add')">+ Adicionar Item</button>
-            <button class="btn" style="background:var(--primary)" onclick="setMode('edit')">✏️ Editar / Excluir</button>
+            <h3 style="margin:0; text-align:center">Configurações</h3>
+            <button class="btn" style="background:var(--success)" onclick="openForm()">+ Adicionar Item</button>
+            <button class="btn" style="background:var(--primary)" onclick="setMode('edit')">✏️ Modo Editar / Excluir</button>
             <div style="display:flex; gap:10px;">
-                <button class="btn" style="flex:1; background:#444" onclick="exportData()">💾 Backup</button>
-                <button class="btn" style="flex:1; background:#444" onclick="document.getElementById('fileIn').click()">📂 Restaurar</button>
+                <button class="btn" style="flex:1; background:#333; color:#ccc" onclick="exportData()">💾 Backup</button>
+                <button class="btn" style="flex:1; background:#333; color:#ccc" onclick="document.getElementById('fileIn').click()">📂 Restaurar</button>
             </div>
             <input type="file" id="fileIn" style="display:none" onchange="importData(event)">
-            <button class="btn" style="background:#666" onclick="closeModal('modalMenu')">Fechar</button>
+            <button class="btn" style="background:#444; color:white" onclick="closeModal('modalMenu')">Fechar</button>
         </div>
     </div>
 
     <div class="modal" id="modalForm">
         <div class="modal-content">
-            <h3 id="formTitle">Novo Item</h3>
+            <h3 id="formTitle" style="margin:0">Novo Aplicativo</h3>
             <input type="text" id="itemName" placeholder="Nome">
-            <input type="text" id="itemIcon" placeholder="Emoji 🚀 ou Link Imagem">
+            <input type="text" id="itemIcon" placeholder="Emoji ou Link da Imagem">
             <select id="itemType" onchange="toggleUrlField()">
-                <option value="link">Link Direto</option>
+                <option value="link">Link Direto (URL)</option>
                 <option value="folder">Pasta (Subgrupo)</option>
             </select>
             <input type="url" id="itemUrl" placeholder="https://...">
-            <button class="btn" style="background:var(--success)" onclick="saveItem()">Salvar</button>
-            <button class="btn" style="background:#444" onclick="closeModal('modalForm')">Cancelar</button>
+            <button class="btn" style="background:var(--success)" onclick="saveItem()">Confirmar e Salvar</button>
+            <button class="btn" style="background:#444; color:white" onclick="closeModal('modalForm')">Cancelar</button>
         </div>
     </div>
 
     <script>
-        const KEY = 'yoshi_v8';
+        const KEY = 'yoshi_v150';
         let data = JSON.parse(localStorage.getItem(KEY)) || { items: [] };
-        let currentFolder = null; // null = raiz, ou o objeto da pasta
-        let mode = 'normal'; // normal, edit
-        let editingIndex = null;
+        let currentFolder = null; 
+        let mode = 'normal'; 
 
         function render() {
             const grid = document.getElementById('mainGrid');
@@ -103,7 +136,6 @@
             grid.innerHTML = '';
             grid.className = 'grid ' + (mode === 'edit' ? 'managing' : '');
 
-            // Se estiver em uma pasta, mostra botão voltar
             btnBack.style.visibility = currentFolder ? 'visible' : 'hidden';
 
             const list = currentFolder ? currentFolder.subItems : data.items;
@@ -113,11 +145,14 @@
                 div.className = 'app-item';
                 div.onclick = () => handleClick(i);
 
-                let iconHtml = item.icon.startsWith('http') ? `<img src="${item.icon}">` : item.icon;
-                let folderTag = item.type === 'folder' ? `<span class="folder-badge">PASTA</span>` : '';
+                let iconHtml = item.icon.startsWith('http') 
+                    ? `<img src="${item.icon}">` 
+                    : `<span class="emoji">${item.icon}</span>`;
+                
+                let folderTag = item.type === 'folder' ? `<span class="folder-badge">GRUPO</span>` : '';
 
                 div.innerHTML = `
-                    <div class="icon-box ${item.type === 'folder' ? 'is-folder' : ''}">
+                    <div class="icon-box">
                         ${iconHtml}
                         ${folderTag}
                     </div>
@@ -133,7 +168,7 @@
             const item = list[i];
 
             if (mode === 'edit') {
-                if(confirm("Deseja EXCLUIR este item? (Para editar, delete e crie de novo nesta versão)")) {
+                if(confirm(`Excluir "${item.name}"?`)) {
                     list.splice(i, 1);
                     mode = 'normal';
                     render();
@@ -146,12 +181,11 @@
                 if (!currentFolder.subItems) currentFolder.subItems = [];
                 render();
             } else {
-                if(item.url) window.open(item.url, '_blank');
+                if(item.url && item.url !== '#') window.open(item.url, '_blank');
             }
         }
 
         function goBack() { currentFolder = null; render(); }
-
         function openMenu() { document.getElementById('modalMenu').style.display = 'flex'; }
         function openForm() { 
             closeModal('modalMenu'); 
@@ -170,24 +204,28 @@
             const type = document.getElementById('itemType').value;
             const url = document.getElementById('itemUrl').value;
 
-            if(!name) return alert("Nome obrigatório");
+            if(!name) return alert("Dê um nome ao item!");
 
             const newItem = { name, icon: icon || '📱', type, url: url || '#', subItems: [] };
             
             if (currentFolder) currentFolder.subItems.push(newItem);
             else data.items.push(newItem);
 
+            // Limpar campos
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemIcon').value = '';
+            
             closeModal('modalForm');
             render();
         }
 
         function setMode(m) { mode = m; closeModal('modalMenu'); render(); }
         
-        // Backup
         function exportData() {
+            const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
             const a = document.createElement('a');
-            a.href = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data));
-            a.download = 'backup_yoshi.json'; a.click();
+            a.href = URL.createObjectURL(blob);
+            a.download = 'backup_yoshi_150px.json'; a.click();
         }
 
         function importData(e) {
