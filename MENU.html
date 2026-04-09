@@ -3,264 +3,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Meu Mobile Launcher PRO + Backup</title>
+    <title>Launcher Yoshi Pro</title>
     <style>
-        /* --- Reset e Variáveis --- */
         :root {
             --bg-phone: #121212;
             --bg-app: #1e1e1e;
-            --text-dark: #eee;
-            --text-light: #fff;
             --primary: #3700b3;
             --danger: #cf6679;
             --warning: #fdd835;
             --success: #03dac6;
-            --border-radius: 16px;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: sans-serif;
             background-color: var(--bg-phone);
-            margin: 0; padding: 0;
-            display: flex; justify-content: center; align-items: center;
-            height: 100vh; overflow: hidden;
+            margin: 0; display: flex; justify-content: center; align-items: center;
+            height: 100vh; overflow: hidden; color: white;
         }
 
         .phone-container {
             width: 360px; height: 740px;
             background-color: var(--bg-app);
-            border: 12px solid #333; border-radius: 40px;
-            overflow: hidden; position: relative;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
-            display: flex; flex-direction: column;
+            border: 10px solid #333; border-radius: 40px;
+            position: relative; display: flex; flex-direction: column;
         }
 
         .status-bar {
-            height: 60px; background-color: var(--primary);
-            color: var(--text-light); display: flex;
-            justify-content: center; align-items: center;
-            z-index: 10;
+            height: 60px; background: var(--primary);
+            display: flex; justify-content: center; align-items: center;
         }
 
         .add-main-btn {
-            background: none; border: none; color: var(--text-light);
-            font-size: 32px; cursor: pointer;
+            background: none; border: none; color: white; font-size: 35px; cursor: pointer;
         }
 
         .app-grid {
             flex: 1; display: grid; grid-template-columns: repeat(4, 1fr);
-            grid-auto-rows: min-content; gap: 15px; padding: 20px;
-            overflow-y: auto; align-content: start;
+            gap: 15px; padding: 20px; overflow-y: auto; align-content: start;
         }
 
-        .app-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; position: relative; text-align: center; }
+        .app-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; position: relative; }
 
-        .app-icon-container {
-            width: 60px; height: 60px; border-radius: var(--border-radius);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3); border: 1px solid #333;
-            display: flex; justify-content: center; align-items: center;
-            overflow: hidden; position: relative;
+        .app-icon {
+            width: 60px; height: 60px; border-radius: 15px;
+            background: #333; display: flex; justify-content: center; align-items: center;
+            font-size: 30px; border: 1px solid #444; overflow: hidden;
         }
 
-        .app-icon-img { width: 100%; height: 100%; object-fit: cover; }
-        .app-icon-text { font-size: 30px; font-weight: bold; }
-        .app-label { font-size: 11px; color: var(--text-dark); margin-top: 6px; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .app-icon img { width: 100%; height: 100%; object-fit: cover; }
 
-        .delete-overlay {
-            position: absolute; top: -5px; right: -5px; background-color: var(--danger);
-            color: white; border-radius: 50%; width: 22px; height: 22px;
-            display: none; justify-content: center; align-items: center; font-weight: bold;
+        .app-label { font-size: 11px; margin-top: 5px; text-align: center; width: 100%; }
+
+        /* Estilo de Exclusão */
+        .del-badge {
+            position: absolute; top: -5px; right: -5px; background: var(--danger);
+            width: 20px; height: 20px; border-radius: 50%; display: none;
+            justify-content: center; align-items: center; font-size: 12px; font-weight: bold;
         }
 
-        .modal-overlay {
+        .managing .del-badge { display: flex; }
+        .managing .app-item { animation: shake 0.3s infinite; }
+        @keyframes shake { 0% {transform: rotate(-1deg)} 50% {transform: rotate(1deg)} }
+
+        /* MODAL */
+        .modal {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.8); display: none;
-            justify-content: center; align-items: flex-end; z-index: 100;
+            background: rgba(0,0,0,0.8); display: none; flex-direction: column;
+            justify-content: flex-end; z-index: 100;
         }
 
         .modal-content {
-            width: 100%; background-color: #2a2a2a; color: #eee;
-            border-top-left-radius: 25px; border-top-right-radius: 25px;
-            padding: 20px; transform: translateY(100%); transition: transform 0.3s ease-out;
-            max-height: 90%; overflow-y: auto;
+            background: #2a2a2a; padding: 20px; border-radius: 25px 25px 0 0;
+            display: flex; flex-direction: column; gap: 10px;
         }
 
-        .modal-overlay.open { display: flex; }
-        .modal-overlay.open .modal-content { transform: translateY(0); }
-
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #444; padding-bottom: 10px; }
+        input { padding: 12px; border-radius: 8px; border: 1px solid #444; background: #1a1a1a; color: white; }
         
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; margin-bottom: 5px; font-size: 13px; color: #bbb; }
-        
-        input[type="text"], input[type="url"], input[type="color"] {
-            width: 100%; padding: 10px; border: 1px solid #444;
-            border-radius: 8px; background-color: #1a1a1a; color: #eee;
-        }
+        .btn { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-add { background: var(--success); }
+        .btn-save { background: var(--warning); }
+        .btn-del { background: var(--danger); color: white; }
+        .btn-close { background: #555; color: white; }
 
-        .action-btn {
-            width: 100%; padding: 12px; border: none; border-radius: 10px;
-            font-weight: bold; cursor: pointer; margin-bottom: 8px;
-        }
-
-        .btn-primary { background-color: var(--primary); color: white; }
-        .btn-success { background-color: var(--success); color: #121212; }
-        .btn-warning { background-color: var(--warning); color: #121212; }
-        .btn-danger { background-color: var(--danger); color: white; }
-
-        /* --- Estilo dos botões de Backup --- */
-        .backup-section {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-            margin-top: 15px; padding-top: 15px; border-top: 1px dashed #555;
-        }
-
-        .btn-backup {
-            background-color: #444; color: #bbb; font-size: 11px; padding: 8px;
-            border: 1px solid #555; border-radius: 6px; cursor: pointer;
-        }
-
-        .managing .app-item { animation: tremble 0.3s infinite; }
-        .managing .app-item .delete-overlay { display: flex; }
-        @keyframes tremble { 0% { transform: rotate(-1deg); } 50% { transform: rotate(1deg); } 100% { transform: rotate(-1deg); } }
-
-        .hidden-input { display: none; }
+        .backup-row { display: flex; gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #555; }
+        .btn-mini { flex: 1; font-size: 10px; padding: 5px; background: #444; color: #ccc; border: 1px solid #555; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="phone-container">
         <div class="status-bar">
-            <button class="add-main-btn" onclick="openModal('modalMenu')">+</button>
+            <button class="add-main-btn" onclick="openModal('menuModal')">+</button>
         </div>
+        <div class="app-grid" id="grid"></div>
+    </div>
 
-        <div class="app-grid" id="appGrid"></div>
-
-        <div class="modal-overlay" id="modalMenu" onclick="closeModalIfOutside(event)">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>Configurações</h2>
-                    <button style="background:none; border:none; color:#999; font-size:20px;" onclick="closeModal('modalMenu')">✕</button>
-                </div>
-                <button class="action-btn btn-success" onclick="openModal('modalAdd'); closeModal('modalMenu');">Adicionar Novo App</button>
-                <button class="action-btn btn-warning" onclick="toggleManagementMode('edit'); closeModal('modalMenu');">Editar Apps</button>
-                <button class="action-btn btn-danger" onclick="toggleManagementMode('delete'); closeModal('modalMenu');">Excluir Apps</button>
-
-                <div class="backup-section">
-                    <button class="btn-backup" onclick="exportBackup()">💾 Exportar Backup</button>
-                    <button class="btn-backup" onclick="document.getElementById('importFile').click()">📂 Restaurar Backup</button>
-                </div>
-                <input type="file" id="importFile" class="hidden-input" accept=".json" onchange="importBackup(event)">
+    <div class="modal" id="menuModal" onclick="closeIfOutside(event)">
+        <div class="modal-content">
+            <h3 style="margin:0 0 10px 0">Opções</h3>
+            <button class="btn btn-add" onclick="prepareAdd()">+ Novo Aplicativo</button>
+            <button class="btn" style="background:#444; color:white" onclick="startManage('edit')">✏️ Editar Aplicativos</button>
+            <button class="btn btn-del" onclick="startManage('delete')">🗑️ Excluir Aplicativos</button>
+            
+            <div class="backup-row">
+                <button class="btn-mini" onclick="exportData()">💾 Backup</button>
+                <button class="btn-mini" onclick="document.getElementById('fileIn').click()">📂 Restaurar</button>
             </div>
+            <input type="file" id="fileIn" style="display:none" onchange="importData(event)">
+            <button class="btn btn-close" onclick="closeModal('menuModal')">Fechar</button>
         </div>
+    </div>
 
-        <div class="modal-overlay" id="modalAdd" onclick="closeModalIfOutside(event)">
-            <div class="modal-content">
-                <div class="modal-header"><h2>Novo App</h2><button style="background:none; border:none; color:#999;" onclick="closeModal('modalAdd')">✕</button></div>
-                <div class="form-group"><label>Nome</label><input type="text" id="addName"></div>
-                <div class="form-group"><label>Ícone (Emoji ou Link)</label><input type="text" id="addIcon" placeholder="🚀 ou link.png"></div>
-                <div class="form-group"><label>Link</label><input type="url" id="addUrl" placeholder="https://..."></div>
-                <button class="action-btn btn-primary" onclick="addNewApp()">Salvar</button>
-            </div>
+    <div class="modal" id="formModal" onclick="closeIfOutside(event)">
+        <div class="modal-content">
+            <h3 id="formTitle">Novo App</h3>
+            <input type="hidden" id="editIndex">
+            <label>Nome:</label>
+            <input type="text" id="appName">
+            <label>Ícone (Emoji ou Link .png):</label>
+            <input type="text" id="appIcon" placeholder="Ex: 🚀 ou http://...">
+            <label>Link de Destino:</label>
+            <input type="url" id="appUrl" placeholder="https://...">
+            
+            <button id="saveBtn" class="btn btn-add" onclick="saveApp()">Salvar</button>
+            <button class="btn btn-close" onclick="closeModal('formModal')">Cancelar</button>
         </div>
     </div>
 
     <script>
-        const DB_KEY = 'yoshi_launcher_v5';
-        let apps = JSON.parse(localStorage.getItem(DB_KEY)) || [{name: 'Google', url: 'https://google.com', icon: '🌐'}];
-        let isManaging = false;
-        let manageMode = '';
+        const KEY = 'yoshi_v6';
+        let apps = JSON.parse(localStorage.getItem(KEY)) || [{name:'Google', icon:'🌐', url:'https://google.com'}];
+        let mode = 'normal'; // normal, edit, delete
 
         function render() {
-            const grid = document.getElementById('appGrid');
+            const grid = document.getElementById('grid');
             grid.innerHTML = '';
-            grid.classList.remove('managing');
-            
-            apps.forEach((app, index) => {
+            grid.className = 'app-grid ' + (mode !== 'normal' ? 'managing' : '');
+
+            apps.forEach((app, i) => {
                 const div = document.createElement('div');
                 div.className = 'app-item';
-                div.onclick = () => handleAppClick(index);
-                
-                let iconContent = app.icon.startsWith('http') 
-                    ? `<img src="${app.icon}" class="app-icon-img">` 
-                    : `<div class="app-icon-text">${app.icon}</div>`;
+                div.onclick = () => handleClick(i);
+
+                let iconHtml = app.icon.startsWith('http') ? `<img src="${app.icon}">` : app.icon;
 
                 div.innerHTML = `
-                    <div class="app-icon-container" style="background:#333;">${iconContent}</div>
+                    <div class="app-icon">${iconHtml}</div>
                     <div class="app-label">${app.name}</div>
-                    <div class="delete-overlay">✕</div>
+                    <div class="del-badge">✕</div>
                 `;
                 grid.appendChild(div);
             });
-            localStorage.setItem(DB_KEY, JSON.stringify(apps));
+            localStorage.setItem(KEY, JSON.stringify(apps));
         }
 
-        function handleAppClick(index) {
-            if (!isManaging) {
-                if(apps[index].url !== '#') window.open(apps[index].url, '_blank');
-            } else if (manageMode === 'delete') {
-                if(confirm('Excluir?')) { apps.splice(index, 1); render(); }
-            }
-        }
-
-        function openModal(id) { document.getElementById(id).classList.add('open'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-        function closeModalIfOutside(e) { if(e.target.classList.contains('modal-overlay')) closeModal(e.target.id); }
-
-        function addNewApp() {
-            const name = document.getElementById('addName').value;
-            const icon = document.getElementById('addIcon').value;
-            const url = document.getElementById('addUrl').value;
-            if(name && url) {
-                apps.push({name, icon: icon || '📱', url});
-                closeModal('modalAdd');
-                render();
-            }
-        }
-
-        function toggleManagementMode(mode) {
-            isManaging = true; manageMode = mode;
-            document.getElementById('appGrid').classList.add('managing');
-            alert('Modo ' + mode + ' ativado! Clique duplo no + para sair.');
-        }
-
-        // --- FUNÇÕES DE BACKUP ---
-        function exportBackup() {
-            const dataStr = JSON.stringify(apps, null, 2);
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-            const exportFileDefaultName = 'backup_launcher_yoshi.json';
-
-            const linkElement = document.createElement('a');
-            linkElement.setAttribute('href', dataUri);
-            linkElement.setAttribute('download', exportFileDefaultName);
-            linkElement.click();
-        }
-
-        function importBackup(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const importedApps = JSON.parse(e.target.result);
-                    if (Array.isArray(importedApps)) {
-                        apps = importedApps;
-                        render();
-                        alert('Backup restaurado com sucesso!');
-                        closeModal('modalMenu');
-                    }
-                } catch (err) {
-                    alert('Erro ao ler o arquivo de backup.');
+        function handleClick(i) {
+            if (mode === 'normal') {
+                window.open(apps[i].url, '_blank');
+            } else if (mode === 'delete') {
+                if(confirm('Excluir ' + apps[i].name + '?')) {
+                    apps.splice(i, 1);
+                    mode = 'normal';
+                    render();
                 }
-            };
-            reader.readAsText(file);
+            } else if (mode === 'edit') {
+                prepareEdit(i);
+            }
         }
 
-        document.querySelector('.add-main-btn').addEventListener('dblclick', () => {
-            isManaging = false; render();
-        });
+        // --- FUNÇÕES DE MODAL ---
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function closeIfOutside(e) { if(e.target.className === 'modal') closeModal(e.target.id); }
+
+        function startManage(m) {
+            mode = m;
+            closeModal('menuModal');
+            render();
+            alert('Modo ' + m + ' ativado! Clique no ícone desejado.');
+        }
+
+        // --- ADICIONAR / EDITAR ---
+        function prepareAdd() {
+            document.getElementById('formTitle').innerText = 'Novo App';
+            document.getElementById('editIndex').value = '-1';
+            document.getElementById('appName').value = '';
+            document.getElementById('appIcon').value = '';
+            document.getElementById('appUrl').value = '';
+            document.getElementById('saveBtn').className = 'btn btn-add';
+            closeModal('menuModal');
+            openModal('formModal');
+        }
+
+        function prepareEdit(i) {
+            document.getElementById('formTitle').innerText = 'Editar App';
+            document.getElementById('editIndex').value = i;
+            document.getElementById('appName').value = apps[i].name;
+            document.getElementById('appIcon').value = apps[i].icon;
+            document.getElementById('appUrl').value = apps[i].url;
+            document.getElementById('saveBtn').className = 'btn btn-save';
+            openModal('formModal');
+        }
+
+        function saveApp() {
+            const idx = parseInt(document.getElementById('editIndex').value);
+            const newApp = {
+                name: document.getElementById('appName').value,
+                icon: document.getElementById('appIcon').value || '📱',
+                url: document.getElementById('appUrl').value
+            };
+
+            if(!newApp.name || !newApp.url) return alert('Preencha nome e link!');
+
+            if(idx === -1) apps.push(newApp);
+            else apps[idx] = newApp;
+
+            mode = 'normal';
+            closeModal('formModal');
+            render();
+        }
+
+        // --- BACKUP ---
+        function exportData() {
+            const blob = new Blob([JSON.stringify(apps)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'backup_yoshi.json'; a.click();
+        }
+
+        function importData(e) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                apps = JSON.parse(event.target.result);
+                render();
+                alert('Backup restaurado!');
+            };
+            reader.readAsText(e.target.files[0]);
+        }
+
+        // Clique duplo no + para resetar modo
+        document.querySelector('.add-main-btn').ondblclick = () => { mode = 'normal'; render(); };
 
         render();
     </script>
