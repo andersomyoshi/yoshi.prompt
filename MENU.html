@@ -3,90 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Launcher Yoshi Pro</title>
+    <title>Launcher Yoshi Premium</title>
     <style>
         :root {
-            --bg-phone: #121212;
-            --bg-app: #1e1e1e;
-            --primary: #3700b3;
-            --danger: #cf6679;
-            --warning: #fdd835;
-            --success: #03dac6;
+            --bg-phone: #101010;
+            --bg-app: #1a1a1a;
+            --primary: #6200ea; /* Roxo mais vivo */
+            --danger: #ff1744; /* Vermelho vibrante */
+            --warning: #ffea00; /* Amarelo */
+            --success: #00e676; /* Verde */
+            --text: #ffffff;
         }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: sans-serif;
+            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
             background-color: var(--bg-phone);
             margin: 0; display: flex; justify-content: center; align-items: center;
-            height: 100vh; overflow: hidden; color: white;
+            height: 100vh; overflow: hidden; color: var(--text);
         }
 
+        /* Container do Celular */
         .phone-container {
             width: 360px; height: 740px;
             background-color: var(--bg-app);
-            border: 10px solid #333; border-radius: 40px;
+            border: 12px solid #333; border-radius: 45px;
             position: relative; display: flex; flex-direction: column;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+            overflow: hidden;
         }
 
+        /* Barra Superior */
         .status-bar {
-            height: 60px; background: var(--primary);
+            height: 65px; background: var(--primary);
             display: flex; justify-content: center; align-items: center;
+            border-bottom: 2px solid rgba(0,0,0,0.2);
         }
 
         .add-main-btn {
-            background: none; border: none; color: white; font-size: 35px; cursor: pointer;
+            background: none; border: none; color: white; font-size: 38px; cursor: pointer;
+            transition: transform 0.2s;
         }
+        .add-main-btn:active { transform: scale(1.2); }
 
+        /* Grade de Apps */
         .app-grid {
             flex: 1; display: grid; grid-template-columns: repeat(4, 1fr);
-            gap: 15px; padding: 20px; overflow-y: auto; align-content: start;
+            gap: 15px; padding: 25px; overflow-y: auto; align-content: start;
         }
 
-        .app-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; position: relative; }
+        /* Ícone do App */
+        .app-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; position: relative; transition: opacity 0.2s; }
+        .app-item:active { opacity: 0.7; }
 
-        .app-icon {
-            width: 60px; height: 60px; border-radius: 15px;
-            background: #333; display: flex; justify-content: center; align-items: center;
-            font-size: 30px; border: 1px solid #444; overflow: hidden;
+        .app-icon-box {
+            width: 65px; height: 65px; border-radius: 18px;
+            background: #2a2a2a; display: flex; justify-content: center; align-items: center;
+            font-size: 32px; border: 1px solid #3a3a3a; 
+            overflow: hidden; /* Importante para o corte da imagem */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
 
-        .app-icon img { width: 100%; height: 100%; object-fit: cover; }
-
-        .app-label { font-size: 11px; margin-top: 5px; text-align: center; width: 100%; }
-
-        /* Estilo de Exclusão */
-        .del-badge {
-            position: absolute; top: -5px; right: -5px; background: var(--danger);
-            width: 20px; height: 20px; border-radius: 50%; display: none;
-            justify-content: center; align-items: center; font-size: 12px; font-weight: bold;
+        /* CSS MÁGICO PARA AJUSTAR A IMAGEM AO QUADRADO */
+        .app-icon-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Preenche o quadrado cortando as sobras, sem distorcer */
+            object-position: center; /* Centraliza o corte */
         }
 
-        .managing .del-badge { display: flex; }
+        .app-label { font-size: 11px; margin-top: 6px; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #ccc; }
+
+        /* Badges de Gestão (Tremendo e X) */
+        .manage-badge {
+            position: absolute; top: -8px; right: -8px; 
+            width: 24px; height: 24px; border-radius: 50%; display: none;
+            justify-content: center; align-items: center; font-size: 14px; font-weight: bold; color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4); z-index: 10;
+        }
+
+        .edit-mode .manage-badge { display: flex; background: var(--warning); color: black; }
+        .delete-mode .manage-badge { display: flex; background: var(--danger); }
+        
         .managing .app-item { animation: shake 0.3s infinite; }
-        @keyframes shake { 0% {transform: rotate(-1deg)} 50% {transform: rotate(1deg)} }
+        @keyframes shake { 0% {transform: rotate(-1deg)} 50% {transform: rotate(1deg)} 100% {transform: rotate(-1deg)} }
 
-        /* MODAL */
+        /* MODAIS */
         .modal {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); display: none; flex-direction: column;
-            justify-content: flex-end; z-index: 100;
+            background: rgba(0,0,0,0.85); display: none; flex-direction: column;
+            justify-content: flex-end; z-index: 100; opacity: 0; transition: opacity 0.3s;
         }
+        .modal.open { display: flex; opacity: 1; }
 
         .modal-content {
-            background: #2a2a2a; padding: 20px; border-radius: 25px 25px 0 0;
-            display: flex; flex-direction: column; gap: 10px;
+            background: #252525; padding: 25px; border-radius: 30px 30px 0 0;
+            display: flex; flex-direction: column; gap: 12px;
+            transform: translateY(100%); transition: transform 0.3s;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
         }
+        .modal.open .modal-content { transform: translateY(0); }
 
-        input { padding: 12px; border-radius: 8px; border: 1px solid #444; background: #1a1a1a; color: white; }
+        .modal h3 { margin: 0 0 10px 0; font-size: 20px; text-align: center; }
+
+        label { font-size: 13px; color: #aaa; margin-bottom: -5px; }
+        input { padding: 14px; border-radius: 10px; border: 1px solid #444; background: #151515; color: white; font-size: 15px; }
+        input:focus { border-color: var(--primary); outline: none; }
         
-        .btn { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .btn-add { background: var(--success); }
-        .btn-save { background: var(--warning); }
+        .btn { padding: 14px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 15px; transition: background 0.2s; }
+        .btn:active { transform: scale(0.98); }
+        
+        .btn-add { background: var(--success); color: #101010; }
+        .btn-save { background: var(--warning); color: #101010; }
         .btn-del { background: var(--danger); color: white; }
-        .btn-close { background: #555; color: white; }
+        .btn-close { background: #444; color: white; margin-top: 5px; }
 
-        .backup-row { display: flex; gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #555; }
-        .btn-mini { flex: 1; font-size: 10px; padding: 5px; background: #444; color: #ccc; border: 1px solid #555; border-radius: 5px; cursor: pointer; }
+        /* Backup */
+        .backup-row { display: flex; gap: 10px; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #444; }
+        .btn-mini { flex: 1; font-size: 11px; padding: 8px; background: #333; color: #aaa; border: 1px solid #444; border-radius: 8px; cursor: pointer; text-align: center;}
+        .btn-mini:hover { background: #404040; color: white; }
     </style>
 </head>
 <body>
@@ -100,16 +136,16 @@
 
     <div class="modal" id="menuModal" onclick="closeIfOutside(event)">
         <div class="modal-content">
-            <h3 style="margin:0 0 10px 0">Opções</h3>
+            <h3>Gerenciar</h3>
             <button class="btn btn-add" onclick="prepareAdd()">+ Novo Aplicativo</button>
-            <button class="btn" style="background:#444; color:white" onclick="startManage('edit')">✏️ Editar Aplicativos</button>
-            <button class="btn btn-del" onclick="startManage('delete')">🗑️ Excluir Aplicativos</button>
+            <button class="btn" style="background:#f5f5f5; color:#111" onclick="startManage('edit')">✏️ Editar Apps</button>
+            <button class="btn btn-del" onclick="startManage('delete')">🗑️ Excluir Apps</button>
             
             <div class="backup-row">
-                <button class="btn-mini" onclick="exportData()">💾 Backup</button>
-                <button class="btn-mini" onclick="document.getElementById('fileIn').click()">📂 Restaurar</button>
+                <div class="btn-mini" onclick="exportData()">💾 Salvar Backup</div>
+                <div class="btn-mini" onclick="document.getElementById('fileIn').click()">📂 Restaurar</div>
             </div>
-            <input type="file" id="fileIn" style="display:none" onchange="importData(event)">
+            <input type="file" id="fileIn" style="display:none" accept=".json" onchange="importData(event)">
             <button class="btn btn-close" onclick="closeModal('menuModal')">Fechar</button>
         </div>
     </div>
@@ -118,11 +154,14 @@
         <div class="modal-content">
             <h3 id="formTitle">Novo App</h3>
             <input type="hidden" id="editIndex">
-            <label>Nome:</label>
-            <input type="text" id="appName">
-            <label>Ícone (Emoji ou Link .png):</label>
-            <input type="text" id="appIcon" placeholder="Ex: 🚀 ou http://...">
-            <label>Link de Destino:</label>
+            
+            <label>Nome do App:</label>
+            <input type="text" id="appName" placeholder="Ex: YouTube">
+            
+            <label>Ícone (Cole Emoji 🚀 ou Link da Imagem):</label>
+            <input type="text" id="appIcon" placeholder="http://...png ou .jpg">
+            
+            <label>Link de Destino (URL):</label>
             <input type="url" id="appUrl" placeholder="https://...">
             
             <button id="saveBtn" class="btn btn-add" onclick="saveApp()">Salvar</button>
@@ -131,26 +170,44 @@
     </div>
 
     <script>
-        const KEY = 'yoshi_v6';
-        let apps = JSON.parse(localStorage.getItem(KEY)) || [{name:'Google', icon:'🌐', url:'https://google.com'}];
+        const KEY = 'yoshi_premium_v7';
+        // Dados padrão caso não exista backup
+        const defaultApps = [
+            {name:'Google', icon:'https://cdn-icons-png.flaticon.com/512/300/300221.png', url:'https://google.com'},
+            {name:'Config', icon:'⚙️', url:'#'}
+        ];
+        let apps = JSON.parse(localStorage.getItem(KEY)) || defaultApps;
         let mode = 'normal'; // normal, edit, delete
 
         function render() {
             const grid = document.getElementById('grid');
             grid.innerHTML = '';
-            grid.className = 'app-grid ' + (mode !== 'normal' ? 'managing' : '');
+            
+            // Define a classe da grade baseado no modo
+            let gridClass = 'app-grid';
+            if (mode !== 'normal') gridClass += ' managing ' + mode + '-mode';
+            grid.className = gridClass;
 
             apps.forEach((app, i) => {
                 const div = document.createElement('div');
                 div.className = 'app-item';
                 div.onclick = () => handleClick(i);
 
-                let iconHtml = app.icon.startsWith('http') ? `<img src="${app.icon}">` : app.icon;
+                // Detecta se é link de imagem ou emoji
+                let iconHtml = '';
+                if (app.icon.startsWith('http') || app.icon.startsWith('data:image')) {
+                    iconHtml = `<img src="${app.icon}" alt="${app.name}">`;
+                } else {
+                    iconHtml = app.icon; // Assume que é emoji ou texto
+                }
+
+                // Badge de gestão (✏️ ou ✕)
+                let badgeChar = mode === 'edit' ? '✏️' : '✕';
 
                 div.innerHTML = `
-                    <div class="app-icon">${iconHtml}</div>
+                    <div class="app-icon-box">${iconHtml}</div>
                     <div class="app-label">${app.name}</div>
-                    <div class="del-badge">✕</div>
+                    <div class="manage-badge">${badgeChar}</div>
                 `;
                 grid.appendChild(div);
             });
@@ -159,9 +216,10 @@
 
         function handleClick(i) {
             if (mode === 'normal') {
-                window.open(apps[i].url, '_blank');
+                if(apps[i].url && apps[i].url !== '#') window.open(apps[i].url, '_blank');
+                else alert('Este app não tem link configurado.');
             } else if (mode === 'delete') {
-                if(confirm('Excluir ' + apps[i].name + '?')) {
+                if(confirm('Deseja excluir definitivamente o app "' + apps[i].name + '"?')) {
                     apps.splice(i, 1);
                     mode = 'normal';
                     render();
@@ -172,15 +230,17 @@
         }
 
         // --- FUNÇÕES DE MODAL ---
-        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        function closeIfOutside(e) { if(e.target.className === 'modal') closeModal(e.target.id); }
+        function openModal(id) { document.getElementById(id).classList.add('open'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+        function closeIfOutside(e) { if(e.target.classList.contains('modal')) closeModal(e.target.id); }
 
         function startManage(m) {
             mode = m;
             closeModal('menuModal');
             render();
-            alert('Modo ' + m + ' ativado! Clique no ícone desejado.');
+            // Pequeno feedback visual
+            const msg = m === 'edit' ? 'Toque no app que deseja EDITAR.' : 'Toque no app que deseja EXCLUIR.';
+            setTimeout(() => alert(msg), 100);
         }
 
         // --- ADICIONAR / EDITAR ---
@@ -190,6 +250,7 @@
             document.getElementById('appName').value = '';
             document.getElementById('appIcon').value = '';
             document.getElementById('appUrl').value = '';
+            document.getElementById('saveBtn').innerText = 'Salvar Novo';
             document.getElementById('saveBtn').className = 'btn btn-add';
             closeModal('menuModal');
             openModal('formModal');
@@ -201,49 +262,70 @@
             document.getElementById('appName').value = apps[i].name;
             document.getElementById('appIcon').value = apps[i].icon;
             document.getElementById('appUrl').value = apps[i].url;
+            document.getElementById('saveBtn').innerText = 'Salvar Alterações';
             document.getElementById('saveBtn').className = 'btn btn-save';
             openModal('formModal');
         }
 
         function saveApp() {
             const idx = parseInt(document.getElementById('editIndex').value);
-            const newApp = {
-                name: document.getElementById('appName').value,
-                icon: document.getElementById('appIcon').value || '📱',
-                url: document.getElementById('appUrl').value
-            };
+            const name = document.getElementById('appName').value;
+            const url = document.getElementById('appUrl').value;
+            let icon = document.getElementById('appIcon').value;
 
-            if(!newApp.name || !newApp.url) return alert('Preencha nome e link!');
+            if(!name || !url) return alert('Por favor, preencha Nome e Link!');
+            
+            // Ícone padrão caso esteja vazio
+            if(!icon) icon = name.charAt(0).toUpperCase();
 
-            if(idx === -1) apps.push(newApp);
-            else apps[idx] = newApp;
+            const appData = { name, icon, url };
 
-            mode = 'normal';
+            if(idx === -1) {
+                apps.push(appData); // Adicionar novo
+            } else {
+                apps[idx] = appData; // Atualizar existente
+            }
+
+            mode = 'normal'; // Volta ao modo normal após salvar
             closeModal('formModal');
             render();
         }
 
-        // --- BACKUP ---
+        // --- BACKUP (JSON) ---
         function exportData() {
-            const blob = new Blob([JSON.stringify(apps)], {type: 'application/json'});
+            const dataStr = JSON.stringify(apps, null, 2);
+            const blob = new Blob([dataStr], {type: 'application/json'});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url; a.download = 'backup_yoshi.json'; a.click();
+            a.href = url; a.download = 'backup_launcher_yoshi.json'; a.click();
+            URL.revokeObjectURL(url);
+            closeModal('menuModal');
         }
 
         function importData(e) {
+            const file = e.target.files[0];
+            if(!file) return;
             const reader = new FileReader();
             reader.onload = (event) => {
-                apps = JSON.parse(event.target.result);
-                render();
-                alert('Backup restaurado!');
+                try {
+                    const imported = JSON.parse(event.target.result);
+                    if(Array.isArray(imported)) {
+                        apps = imported;
+                        render();
+                        alert('Backup restaurado com sucesso!');
+                        closeModal('menuModal');
+                    } else { alert('Arquivo de backup inválido.'); }
+                } catch(err) { alert('Erro ao ler o arquivo.'); }
             };
-            reader.readAsText(e.target.files[0]);
+            reader.readAsText(file);
         }
 
-        // Clique duplo no + para resetar modo
-        document.querySelector('.add-main-btn').ondblclick = () => { mode = 'normal'; render(); };
+        // Clique duplo no botão + reseta para o modo normal
+        document.querySelector('.add-main-btn').ondblclick = () => { 
+            if(mode !== 'normal') { mode = 'normal'; render(); }
+        };
 
+        // Iniciar
         render();
     </script>
 </body>
